@@ -11,9 +11,9 @@
 # 预装科学计算套件
 # 支持多版本环境隔离
 
-# 创建虚拟环境
+# 创建虚拟环境 在ai-code目录执行下面命令
 python3 -m venv ./python
-# 激活环境（macOS/Linux）
+# 激活环境（macOS/Linux） 在python目录执行下面命令
 source ./bin/activate
 # 退出虚拟环境
 deactivate
