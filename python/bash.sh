@@ -23,3 +23,5 @@ pip3 freeze > requirements.txt
 # 他人拿到项目后，先创建并激活venv，再安装依赖
 pip3 install -r requirements.txt
 
+
+source .venv/bin/activate
