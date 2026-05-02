@@ -1,16 +1,25 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/users/users.module';
 import { TestModule } from './modules/test/test.module';
-import { User } from './modules/users/entities/user.entity';
+import configuration from './config/index';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'db.sqlite',
-      entities: [User],
-      synchronize: true, // 仅在开发环境使用，生产环境应使用 migrations
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        return {
+          ...configService.get('config.database'),
+        };
+      },
+      inject: [ConfigService],
     }),
     UsersModule,
     TestModule,
