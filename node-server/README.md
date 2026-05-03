@@ -44,6 +44,46 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## PM2 Process Management
+
+The project uses PM2 for process management and clustering.
+
+### Commands
+
+```bash
+# Start production mode
+$ npm run pm2:start
+
+# Start pre-release mode
+$ npm run pm2:pre
+
+# Start development mode
+$ npm run pm2:dev
+
+# Restart all processes
+$ npm run pm2:restart
+
+# Stop all processes
+$ npm run pm2:stop
+
+# Delete all processes
+$ npm run pm2:delete
+
+# View real-time logs
+$ npm run pm2:logs
+
+# Monitor processes (CPU/Memory)
+$ npm run pm2:monit
+```
+
+### Important Notes
+
+1.  **Build First**: Always run `npm run build` before starting or restarting PM2 services to ensure the latest code in `dist/` is used.
+2.  **Cluster Mode**: By default, PM2 is configured to run in cluster mode (`instances: 'max'`) to utilize all CPU cores.
+3.  **Logs**: Application logs are stored in the `./logs` directory. Error logs are in `error.log` and standard output in `out.log`.
+4.  **Environment Files**: Ensure the corresponding `.env.{development|pre|production}` files exist as PM2 will load settings based on the environment flag.
+
+
 ## Run tests
 
 ```bash
