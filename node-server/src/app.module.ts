@@ -18,8 +18,11 @@ import { AuthMiddleware } from './middleware/auth.middleware';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const dbConfig = configService.get('config.database');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return {
-          ...configService.get('config.database'),
+          ...dbConfig,
         };
       },
       inject: [ConfigService],
@@ -30,6 +33,6 @@ import { AuthMiddleware } from './middleware/auth.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer.apply(AuthMiddleware).forRoutes('*');
   }
 }

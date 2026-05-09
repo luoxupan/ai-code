@@ -39,7 +39,8 @@ export class AuthMiddleware implements NestMiddleware {
         errorMessage = error.message;
       }
       console.error('Error during authentication:', errorMessage);
-      res.status(401).send('Unauthorized');
+      // res.status(401).send('Unauthorized');
+      next();
     }
   }
 }
