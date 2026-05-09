@@ -1,6 +1,17 @@
 import { registerAs } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-export default registerAs('config', () => {
+export interface AppConfig {
+  port: number;
+  env: string;
+}
+
+export interface Config {
+  app: AppConfig;
+  database: TypeOrmModuleOptions;
+}
+
+export default registerAs('config', (): Config => {
   return {
     app: {
       port: parseInt(process.env.PORT || '3000', 10),
