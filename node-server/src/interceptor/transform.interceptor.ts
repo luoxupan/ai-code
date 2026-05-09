@@ -9,7 +9,7 @@ import { map } from 'rxjs/operators';
 
 export interface Response<T> {
   data: T;
-  code: number;
+  errno: number;
   message: string;
 }
 
@@ -23,12 +23,14 @@ export class TransformInterceptor<T> implements NestInterceptor<
     next: CallHandler,
   ): Observable<Response<T>> {
     return next.handle().pipe(
-      map((data) => ({
-        code: 200,
-        message: 'success',
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        data,
-      })),
+      map((data) => {
+        return {
+          errno: 0,
+          message: 'success',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          data,
+        };
+      }),
     );
   }
 }
