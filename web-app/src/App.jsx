@@ -1,12 +1,14 @@
-import { useState } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
+import { useAtom } from 'jotai'
+import { countAtom } from './store.ts'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import TablePage from './pages/TablePage.jsx'
+import CounterDisplay from './component/CounterDisplay'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useAtom(countAtom)
 
   return (
     <>
@@ -30,13 +32,14 @@ function App() {
           <div className="home-page">
             <h1>Vite + React</h1>
             <div className="card">
-              <button onClick={() => setCount((count) => count + 1)}>
+              <button onClick={() => setCount((c) => c + 1)}>
                 count is {count}
               </button>
               <p>
                 Edit <code>src/App.jsx</code> and save to test HMR
               </p>
             </div>
+            <CounterDisplay />
             <p className="read-the-docs">
               Click on the Vite and React logos to learn more
             </p>
