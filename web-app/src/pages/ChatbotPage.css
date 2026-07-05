@@ -1,11 +1,12 @@
 .chatbot-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 95vh;
   max-width: 768px;
   margin: 0 auto;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  overflow: hidden; /* Prevent body scroll if content overflows, let message-list scroll */
 }
 
 .header {
@@ -13,6 +14,7 @@
   border-bottom: 1px solid #eee;
   text-align: center;
   background-color: #f7f7f7;
+  /* Header is implicitly fixed at top by flex-direction: column */
 }
 
 .header h1 {
@@ -27,9 +29,10 @@
 }
 
 .message-list {
-  flex-grow: 1;
-  overflow-y: auto;
+  flex-grow: 1; /* Takes remaining space */
+  overflow-y: auto; /* Make messages scrollable */
   padding: 20px;
+  /* Removed padding-bottom: 80px; as input is now in flow */
   background-color: #f9f9f9;
 }
 
@@ -72,9 +75,13 @@
 }
 
 .message-input-container {
+  /* Reverted to be part of the flex flow */
   display: flex;
   padding: 10px;
   border-top: 1px solid #eee;
+  background-color: #fff; /* Ensure it has a background */
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.05); /* Keep shadow for visual separation */
+  /* Removed position: fixed and related properties */
 }
 
 .message-input-container input {

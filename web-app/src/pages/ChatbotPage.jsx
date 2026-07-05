@@ -30,22 +30,21 @@ const ChatbotPage = () => {
       setMessages(JSON.parse(savedHistory));
     }
 
-    // Connect to WebSocket
-    setStatus('connecting');
-    socketService.connect(
-      () => setStatus('connected'),
-      () => setStatus('disconnected'),
-      (err) => console.error(err)
-    );
-
-    // Subscribe to incoming messages
-    const unsubscribe = socketService.onMessage((message) => {
+    // Subscribe to service events
+    const unsubscribeStatus = socketService.onStatusChange(setStatus);
+    const unsubscribeMessage = socketService.onMessage((message) => {
       const newMessage = { ...message, sender: 'system' };
       setMessages((prev) => [...prev, newMessage]);
     });
 
+    // Initial connection
+    socketService.connect().catch(err => {
+      console.error("Initial connection failed", err);
+    });
+
     return () => {
-      unsubscribe();
+      unsubscribeStatus();
+      unsubscribeMessage();
       socketService.disconnect();
     };
   }, [setMessages, setStatus]);

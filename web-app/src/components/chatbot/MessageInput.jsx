@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { v4 as uuidv4 } from 'uuid';
 import { inputTextAtom, messagesAtom } from '../../store/chatbotAtoms.ts';
 import { socketService } from '../../services/socketService.ts';
+import { MESSAGE_TYPE, SUB_TYPE } from '../../constants/chat.ts';
 
 const MessageInput = () => {
   const [text, setText] = useAtom(inputTextAtom);
@@ -14,8 +15,8 @@ const MessageInput = () => {
     const mid = uuidv4();
     const newMessage = {
       mid,
-      type: 5,
-      subType: 0, // Default to plain text, or decide based on input
+      type: MESSAGE_TYPE.CHAT,
+      subType: SUB_TYPE.PLAIN_TEXT, // Default to plain text, or decide based on input
       sender: 'user',
       status: 'sending',
       payload: {

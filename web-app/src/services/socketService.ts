@@ -1,13 +1,19 @@
 import { io, Socket } from 'socket.io-client';
+import { MESSAGE_TYPE } from '../constants/chat';
 
 const SOCKET_URL = 'ws://localhost:3002'; // Replace with your actual WebSocket server URL
-const SEND_TIMEOUT = 5000; // 5 seconds
+const SEND_TIMEOUT = 10000; // 5 seconds
+
+type Status = 'connecting' | 'connected' | 'disconnected';
 
 class SocketService {
   private static instance: SocketService;
   public socket: Socket | null = null;
   private messageListeners: Array<(message: any) => void> = [];
   private ackListeners: Map<string, (ack: any) => void> = new Map();
+  private statusListeners: Array<(status: Status) => void> = [];
+  private connectionPromise: Promise<void> | null = null;
+  public status: Status = 'disconnected';
 
   private constructor() {}
 
@@ -18,49 +24,60 @@ class SocketService {
     return SocketService.instance;
   }
 
-  public connect(
-    onConnect: () => void,
-    onDisconnect: () => void,
-    onConnectError: (err: Error) => void
-  ) {
-    if (this.socket) return;
+  private setStatus(status: Status) {
+    this.status = status;
+    this.statusListeners.forEach(listener => listener(status));
+  }
 
-    this.socket = io(SOCKET_URL, {
-      transports: ['websocket'],
-    });
+  public connect(): Promise<void> {
+    if (this.socket && this.socket.connected) {
+      return Promise.resolve();
+    }
 
-    this.socket.on('connect', () => {
-      console.log('Socket.IO connected');
-      onConnect();
-      this.setupDefaultListeners();
-    });
+    if (this.connectionPromise) {
+      return this.connectionPromise;
+    }
 
-    this.socket.on('disconnect', (reason: string) => {
-      console.log('Socket.IO disconnected:', reason);
-      onDisconnect();
-      this.cleanup();
-    });
+    this.connectionPromise = new Promise((resolve, reject) => {
+      this.socket = io(SOCKET_URL, {
+        transports: ['websocket'],
+      });
+      this.setStatus('connecting');
 
-    this.socket.on('connect_error', (err: Error) => {
-      console.error('Socket.IO connection error:', err);
-      onConnectError(err);
+      this.socket.on('connect', () => {
+        console.log('Socket.IO connected');
+        this.setStatus('connected');
+        this.setupDefaultListeners();
+        this.connectionPromise = null;
+        resolve();
+      });
+
+      this.socket.on('disconnect', (reason: string) => {
+        console.log('Socket.IO disconnected:', reason);
+        this.setStatus('disconnected');
+        this.cleanup();
+      });
+
+      this.socket.on('connect_error', (err: Error) => {
+        console.error('Socket.IO connection error:', err);
+        this.setStatus('disconnected');
+        this.connectionPromise = null;
+        reject(err);
+      });
     });
+    
+    return this.connectionPromise;
   }
 
   private setupDefaultListeners() {
     if (!this.socket) return;
-
-    // Listener for general messages from the server
     this.socket.on('Message', (message: any) => {
-      // Handle ACKs separately from general messages
-      if (message.type === 3 && message.mid) {
+      if (message.type === MESSAGE_TYPE.ACK && message.mid) {
         if (this.ackListeners.has(message.mid)) {
-          const callback = this.ackListeners.get(message.mid);
-          callback?.(message);
+          this.ackListeners.get(message.mid)?.(message);
           this.ackListeners.delete(message.mid);
         }
       } else {
-        // It's a regular message, notify listeners and send ACK back
         this.messageListeners.forEach(listener => listener(message));
         this.sendAck(message.mid);
       }
@@ -80,15 +97,20 @@ class SocketService {
   
   private sendAck(mid: string) {
     if (!mid || !this.socket) return;
-    this.socket.emit('Message', { type: 3, mid, payload: {} });
+    this.socket.emit('Message', { type: MESSAGE_TYPE.ACK, mid, payload: {} });
   }
 
-  public sendMessage(message: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        return reject(new Error('Socket not connected'));
-      }
+  public async sendMessage(message: any): Promise<any> {
+    if (!this.socket || !this.socket.connected) {
+      await this.connect();
+    }
+    
+    // This check is needed because connect() could have failed
+    if (!this.socket) {
+      throw new Error('Socket connection failed.');
+    }
 
+    return new Promise((resolve, reject) => {
       const mid = message.mid;
       if (!mid) {
         return reject(new Error('Message must have a unique mid'));
@@ -105,15 +127,23 @@ class SocketService {
         resolve(ack);
       });
 
-      this.socket.emit('Message', message);
+      this.socket!.emit('Message', message);
     });
   }
 
   public onMessage(callback: (message: any) => void): () => void {
     this.messageListeners.push(callback);
-    // Return a function to unsubscribe
     return () => {
       this.messageListeners = this.messageListeners.filter(
+        listener => listener !== callback
+      );
+    };
+  }
+
+  public onStatusChange(callback: (status: Status) => void): () => void {
+    this.statusListeners.push(callback);
+    return () => {
+      this.statusListeners = this.statusListeners.filter(
         listener => listener !== callback
       );
     };
@@ -121,3 +151,4 @@ class SocketService {
 }
 
 export const socketService = SocketService.getInstance();
+

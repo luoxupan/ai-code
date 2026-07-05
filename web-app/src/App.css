@@ -140,5 +140,7 @@
   max-width: 60%;
   margin: 0 auto;
   padding: 0.32rem; /* Adding some padding for spacing */
+  height: 93vh;
+  overflow: hidden;
 }
 

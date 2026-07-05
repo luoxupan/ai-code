@@ -1,7 +1,13 @@
 import React from 'react';
 import { messageComponentMap } from './index.ts';
+import { MESSAGE_TYPE } from '../../constants/chat.ts';
 
 const MessageRenderer = ({ message }) => {
+  // Explicitly do not render ACK messages
+  if (message.type === MESSAGE_TYPE.ACK) {
+    return null;
+  }
+
   // Destructure with a default value for payload to be safe
   const { type, subType, payload = {} } = message;
 
@@ -12,7 +18,7 @@ const MessageRenderer = ({ message }) => {
   }
 
   // For chat messages (type 5), use the component map
-  if (type === 5) {
+  if (type === MESSAGE_TYPE.CHAT) {
     const Component = messageComponentMap[subType];
     if (Component) {
       return <Component content={payload.content} />;

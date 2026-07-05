@@ -1,4 +1,4 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAtom } from 'jotai'
 import { countAtom } from './store.ts'
 import reactLogo from './assets/react.svg'
@@ -11,25 +11,29 @@ import ChatbotPage from './pages/ChatbotPage.jsx'
 
 function App() {
   const [count, setCount] = useAtom(countAtom)
+  const location = useLocation();
+  const showNavbar = location.pathname !== '/chatbot';
 
   return (
     <>
-      <div className="app-nav">
-        <div className="nav-logo">
-          <a href="https://vite.dev" target="_blank" rel="noopener noreferrer">
-            <img src={viteLogo} className="logo" alt="Vite logo" />
-          </a>
-          <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-            <img src={reactLogo} className="logo react" alt="React logo" />
-          </a>
+      {showNavbar && (
+        <div className="app-nav">
+          <div className="nav-logo">
+            <a href="https://vite.dev" target="_blank" rel="noopener noreferrer">
+              <img src={viteLogo} className="logo" alt="Vite logo" />
+            </a>
+            <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
+              <img src={reactLogo} className="logo react" alt="React logo" />
+            </a>
+          </div>
+          <nav className="nav-links">
+            <Link to="/" className="nav-link">首页</Link>
+            <Link to="/table" className="nav-link">数据表格</Link>
+            <Link to="/websocket" className="nav-link">WebSocket</Link>
+            <Link to="/chatbot" className="nav-link">Chatbot</Link>
+          </nav>
         </div>
-        <nav className="nav-links">
-          <Link to="/" className="nav-link">首页</Link>
-          <Link to="/table" className="nav-link">数据表格</Link>
-          <Link to="/websocket" className="nav-link">WebSocket</Link>
-          <Link to="/chatbot" className="nav-link">Chatbot</Link>
-        </nav>
-      </div>
+      )}
       <div className="main-content-wrapper">
         <Routes>
           <Route path="/" element={
