@@ -31,6 +31,11 @@
 $ npm install
 ```
 
+数据库启动命令
+```bash
+mysql.server start
+```
+
 ## Compile and run the project
 
 ```bash

@@ -5,6 +5,7 @@ import { UsersModule } from './modules/users/users.module';
 import { TestModule } from './modules/test/test.module';
 import configuration from './config/index';
 import { HttpModule } from '@nestjs/axios';
+import { WebsocketModule } from './modules/websocket/websocket.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 
 @Module({
@@ -29,6 +30,7 @@ import { AuthMiddleware } from './middleware/auth.middleware';
     }),
     UsersModule,
     TestModule,
+    WebsocketModule,
   ],
 })
 export class AppModule implements NestModule {

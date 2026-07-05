@@ -4,13 +4,18 @@ import { NestFactory, HttpAdapterHost, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
+import { SocketIoAdapter } from './adapters/socket-io.adapter';
 import { TransformInterceptor } from './interceptor/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // websocket
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
+
   // 安全防护
   app.use(helmet());
+
 
   // 开启CORS
   app.enableCors();
