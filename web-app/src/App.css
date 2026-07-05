@@ -24,6 +24,8 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 60%;
+  margin: 0 auto;
 }
 
 .nav-logo {
@@ -132,5 +134,11 @@
 .read-the-docs {
   color: var(--text-secondary);
   font-family: 'JetBrains Mono', monospace;
+}
+
+.main-content-wrapper {
+  max-width: 60%;
+  margin: 0 auto;
+  padding: 0.32rem; /* Adding some padding for spacing */
 }
 

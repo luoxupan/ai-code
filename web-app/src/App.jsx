@@ -6,6 +6,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import TablePage from './pages/TablePage.jsx'
 import CounterDisplay from './component/CounterDisplay'
+import WebSocketPage from './pages/WebSocketPage.jsx'
 
 function App() {
   const [count, setCount] = useAtom(countAtom)
@@ -24,29 +25,32 @@ function App() {
         <nav className="nav-links">
           <Link to="/" className="nav-link">首页</Link>
           <Link to="/table" className="nav-link">数据表格</Link>
+          <Link to="/websocket" className="nav-link">WebSocket</Link>
         </nav>
       </div>
-
-      <Routes>
-        <Route path="/" element={
-          <div className="home-page">
-            <h1>Vite + React</h1>
-            <div className="card">
-              <button onClick={() => setCount((c) => c + 1)}>
-                count is {count}
-              </button>
-              <p>
-                Edit <code>src/App.jsx</code> and save to test HMR
+      <div className="main-content-wrapper">
+        <Routes>
+          <Route path="/" element={
+            <div className="home-page">
+              <h1>Vite + React</h1>
+              <div className="card">
+                <button onClick={() => setCount((c) => c + 1)}>
+                  count is {count}
+                </button>
+                <p>
+                  Edit <code>src/App.jsx</code> and save to test HMR
+                </p>
+              </div>
+              <CounterDisplay />
+              <p className="read-the-docs">
+                Click on the Vite and React logos to learn more
               </p>
             </div>
-            <CounterDisplay />
-            <p className="read-the-docs">
-              Click on the Vite and React logos to learn more
-            </p>
-          </div>
-        } />
-        <Route path="/table" element={<TablePage />} />
-      </Routes>
+          } />
+          <Route path="/table" element={<TablePage />} />
+          <Route path="/websocket" element={<WebSocketPage />} />
+        </Routes>
+      </div>
     </>
   )
 }
