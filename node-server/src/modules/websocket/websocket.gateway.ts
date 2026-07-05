@@ -38,12 +38,10 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
   handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket): void {
     console.log(`Message from client ${client.id}: ${JSON.stringify(data)}`);
     // Echo message back to the sender
-    setTimeout(() => {
-      client.emit('Message', {
-      type: 3,
+    client.emit('Message', {
       ...data,
+      type: 3,
     });
-    }, 4000)
   }
 
   /**

@@ -38,9 +38,9 @@ const ChatbotPage = () => {
     });
 
     // Initial connection
-    socketService.connect().catch(err => {
-      console.error("Initial connection failed", err);
-    });
+    // socketService.connect().catch(err => {
+    //   console.error("Initial connection failed", err);
+    // });
 
     return () => {
       unsubscribeStatus();

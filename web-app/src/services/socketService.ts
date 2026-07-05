@@ -2,7 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import { MESSAGE_TYPE } from '../constants/chat';
 
 const SOCKET_URL = 'ws://localhost:3002'; // Replace with your actual WebSocket server URL
-const SEND_TIMEOUT = 10000; // 5 seconds
+const SEND_TIMEOUT = 6000; // 6 seconds
 
 type Status = 'connecting' | 'connected' | 'disconnected';
 
@@ -15,7 +15,8 @@ class SocketService {
   private connectionPromise: Promise<void> | null = null;
   public status: Status = 'disconnected';
 
-  private constructor() {}
+  private constructor() {
+  }
 
   public static getInstance(): SocketService {
     if (!SocketService.instance) {
@@ -101,13 +102,20 @@ class SocketService {
   }
 
   public async sendMessage(message: any): Promise<any> {
+    // If we're not connected, try to connect first.
     if (!this.socket || !this.socket.connected) {
-      await this.connect();
+      try {
+        await this.connect();
+      } catch (err) {
+        console.error("Connection attempt failed in sendMessage:", err);
+        // Re-throw an error to be caught by the calling function
+        throw new Error("Failed to connect to WebSocket to send message.");
+      }
     }
-    
-    // This check is needed because connect() could have failed
-    if (!this.socket) {
-      throw new Error('Socket connection failed.');
+
+    // After attempting connection, re-check status before sending.
+    if (!this.socket || !this.socket.connected) {
+      throw new Error("WebSocket is not connected. Cannot send message.");
     }
 
     return new Promise((resolve, reject) => {
@@ -127,7 +135,9 @@ class SocketService {
         resolve(ack);
       });
 
-      this.socket!.emit('Message', message);
+      if (message.type !== MESSAGE_TYPE.ACK) {
+        this.socket!.emit('Message', message);
+      }
     });
   }
 
