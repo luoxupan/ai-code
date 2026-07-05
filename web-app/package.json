@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "browserslist": "^4.28.2",
-    "jotai": "^2.20.0",
+    "jotai": "^2.20.1",
+    "jotai-immer": "^0.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

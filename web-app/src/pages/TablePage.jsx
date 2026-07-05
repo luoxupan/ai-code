@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import TableComponent from '../component/TableComponent'
+import TableComponent from '../components/TableComponent'
 import './TablePage.css'
 
 function TablePage() {

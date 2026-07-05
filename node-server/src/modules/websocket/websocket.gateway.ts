@@ -34,11 +34,11 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     this.websocketService.removeClient(client.id);
   }
 
-  @SubscribeMessage('messageToServer')
+  @SubscribeMessage('Message')
   handleMessage(@MessageBody() data: string, @ConnectedSocket() client: Socket): void {
     console.log(`Message from client ${client.id}: ${JSON.stringify(data)}`);
     // Echo message back to the sender
-    client.emit('messageToClient', `Server received: ${data}`);
+    client.emit('Message', `Server received: ${data}`);
   }
 
   /**
@@ -46,6 +46,6 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
    * @param message The message to send.
    */
   public broadcast(message: any) {
-    this.server.emit('messageToClient', message);
+    this.server.emit('Message', message);
   }
 }
