@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/users/users.module';
 import { TestModule } from './modules/test/test.module';
+import { WebsiteModule } from './modules/website/website.module';
 import configuration from './config/index';
 import { HttpModule } from '@nestjs/axios';
 import { WebsocketModule } from './modules/websocket/websocket.module';
@@ -31,10 +32,14 @@ import { AuthMiddleware } from './middleware/auth.middleware';
     UsersModule,
     TestModule,
     WebsocketModule,
+    WebsiteModule,
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer
+      .apply(AuthMiddleware)
+      .exclude('website/*path')
+      .forRoutes('*');
   }
 }

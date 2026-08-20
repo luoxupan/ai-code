@@ -9,6 +9,9 @@ const FaqCard = ({ content }) => {
     console.error("Failed to parse FaqCard content", content);
   }
 
+  React.useCallback;
+  React.useMemo;
+
   return (
     <div className="faq-card">
       <p><strong>问题：{parsedContent.question}</strong></p>
