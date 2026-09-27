@@ -1,4 +1,3 @@
-
 import {
   WebSocketGateway,
   SubscribeMessage,
@@ -8,9 +7,17 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
+import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { WebsocketService } from './websocket.service';
-import { invokeAgent } from '../../agent';
+import { deleteAgentMemory, invokeAgent } from '../../agent';
+
+type WebsocketMessage = {
+  type?: number;
+  payload?: {
+    content?: string;
+  };
+};
 
 @WebSocketGateway({
   cors: {
@@ -19,7 +26,11 @@ import { invokeAgent } from '../../agent';
   pingInterval: 5000,
   pingTimeout: 10000,
 })
-export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class WebsocketGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  private readonly logger = new Logger(WebsocketGateway.name);
+
   @WebSocketServer()
   server: Server;
 
@@ -33,11 +44,23 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
     this.websocketService.removeClient(client.id);
+    void deleteAgentMemory(client.id).catch((error: unknown) => {
+      this.logger.error(
+        `Failed to clear memory for client ${client.id}: ${JSON.stringify(
+          error,
+        )}`,
+      );
+    });
   }
 
   @SubscribeMessage('Message')
-  async handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
-    console.log(`Message from client ${client.id}: ${JSON.stringify(data) }\n${data?.payload?.content}`);
+  async handleMessage(
+    @MessageBody() data: WebsocketMessage,
+    @ConnectedSocket() client: Socket,
+  ): Promise<void> {
+    this.logger.log(
+      `Message from client ${client.id}: ${JSON.stringify(data)}`,
+    );
     // Echo message back to the sender
     if (data?.type !== 3) {
       client.emit('Message', {
@@ -47,9 +70,9 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       let content = data?.payload?.content;
       if (data?.payload?.content) {
         try {
-          content = await invokeAgent(data?.payload?.content);
-        } catch (e: any) {
-          content = e?.message || 'Error';
+          content = await invokeAgent(data?.payload?.content, client.id);
+        } catch (error: unknown) {
+          content = error instanceof Error ? error.message : 'Error';
         }
       }
       client.emit('Message', {

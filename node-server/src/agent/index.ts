@@ -1,7 +1,11 @@
 import { AIMessage } from '@langchain/core/messages';
-import { BaseChatModel, BindToolsInput } from '@langchain/core/language_models/chat_models';
+import {
+  BaseChatModel,
+  BindToolsInput,
+} from '@langchain/core/language_models/chat_models';
 import { BaseMessage } from '@langchain/core/messages';
 import { ChatResult } from '@langchain/core/outputs';
+import { MemorySaver } from '@langchain/langgraph-checkpoint';
 import { createAgent, createMiddleware, ToolMessage } from 'langchain';
 import { tools } from './tools';
 import { MODEL_CONF } from './conf';
@@ -20,9 +24,7 @@ class DeepSeekChatModel extends BaseChatModel {
 
   private readonly toolChoice?: unknown;
 
-  constructor(
-    fields: { tools?: DeepSeekTool[]; toolChoice?: unknown } = {},
-  ) {
+  constructor(fields: { tools?: DeepSeekTool[]; toolChoice?: unknown } = {}) {
     super({ disableStreaming: true });
     this.tools = fields.tools;
     this.toolChoice = fields.toolChoice;
@@ -32,9 +34,11 @@ class DeepSeekChatModel extends BaseChatModel {
     return new DeepSeekChatModel({
       tools: tools.map((candidate) => {
         const candidateRecord = candidate as Record<string, unknown>;
-        const schema = candidateRecord.schema as {
-          toJSONSchema?: () => unknown;
-        } | undefined;
+        const schema = candidateRecord.schema as
+          | {
+              toJSONSchema?: () => unknown;
+            }
+          | undefined;
 
         return {
           type: 'function',
@@ -66,16 +70,16 @@ class DeepSeekChatModel extends BaseChatModel {
 
     const messageRecord = message as unknown as Record<string, unknown>;
     if (message.type === 'ai' && Array.isArray(messageRecord.tool_calls)) {
-      result.tool_calls = (messageRecord.tool_calls as Record<string, unknown>[]).map(
-        (call) => ({
-          id: call.id,
-          type: 'function',
-          function: {
-            name: call.name,
-            arguments: JSON.stringify(call.args ?? {}),
-          },
-        }),
-      );
+      result.tool_calls = (
+        messageRecord.tool_calls as Record<string, unknown>[]
+      ).map((call) => ({
+        id: call.id,
+        type: 'function',
+        function: {
+          name: call.name,
+          arguments: JSON.stringify(call.args ?? {}),
+        },
+      }));
     }
     if (message.type === 'tool') {
       result.tool_call_id = messageRecord.tool_call_id;
@@ -167,10 +171,12 @@ const createConfiguredAgent = () => {
     },
   });
 
+  const checkpointer = new MemorySaver();
   return createAgent({
     model: new DeepSeekChatModel(),
     tools: tools,
     middleware: [handleToolErrors],
+    checkpointer,
   });
 };
 
@@ -181,17 +187,38 @@ const getAgent = () => {
   return agentPromise;
 };
 
-/** Invoke the configured LangChain agent and return its final model response. */
-export const invokeAgent = async (message: string): Promise<string> => {
+/** Remove persisted conversation state for a single thread. */
+export const deleteAgentMemory = async (threadId: string): Promise<void> => {
   const agent = await getAgent();
-  const response = await agent.invoke({
-    messages: [
-      {
-        role: 'user',
-        content: message,
-      },
-    ],
-  });
+  const checkpointer = agent.checkpointer;
+  if (checkpointer instanceof MemorySaver) {
+    await checkpointer.deleteThread(threadId);
+  }
+};
+
+/** Invoke the configured LangChain agent and return its final model response. */
+export const invokeAgent = async (
+  message: string,
+  threadId?: string,
+): Promise<string> => {
+  const agent = await getAgent();
+  const response = await agent.invoke(
+    {
+      messages: [
+        {
+          role: 'user',
+          content: message,
+        },
+      ],
+    },
+    threadId
+      ? {
+          configurable: {
+            thread_id: threadId,
+          },
+        }
+      : undefined,
+  );
 
   const lastMessage = response.messages.at(-1);
   if (!lastMessage) {
