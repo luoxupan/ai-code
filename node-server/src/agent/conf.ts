@@ -8,7 +8,8 @@ const deepseek = {
 const glm = {
   token: TokenConf.glmToken,
   base_url: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-  model: 'glm-5.3',
+  model: 'glm-4-flash',
+  // model: 'glm-5.3',
 };
 
 export const MODEL_CONF = {
