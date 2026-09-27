@@ -10,6 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { WebsocketService } from './websocket.service';
+import { invokeAgent } from '../../agent';
 
 @WebSocketGateway({
   cors: {
@@ -35,13 +36,28 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   @SubscribeMessage('Message')
-  handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket): void {
-    console.log(`Message from client ${client.id}: ${JSON.stringify(data)}`);
+  async handleMessage(@MessageBody() data: any, @ConnectedSocket() client: Socket): Promise<any> {
+    console.log(`Message from client ${client.id}: ${JSON.stringify(data) }\n${data?.payload?.content}`);
     // Echo message back to the sender
-    client.emit('Message', {
-      ...data,
-      type: 3,
-    });
+    if (data?.type !== 3) {
+      client.emit('Message', {
+        ...data,
+        type: 3,
+      });
+      let content = data?.payload?.content;
+      if (data?.payload?.content) {
+        content = await invokeAgent(data?.payload?.content);
+      }
+      client.emit('Message', {
+        ...data,
+        payload: {
+          ...data?.payload,
+          content: content,
+        },
+        subType: 0,
+        type: 5,
+      });
+    }
   }
 
   /**

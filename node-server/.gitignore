@@ -1,6 +1,7 @@
 # Dependency directories
 node_modules/
 jspm_packages/
+model.ts
 
 # Build artifacts
 dist/

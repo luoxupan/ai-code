@@ -73,8 +73,8 @@ class SocketService {
   private setupDefaultListeners() {
     if (!this.socket) return;
     this.socket.on('Message', (message: any) => {
-      if (message.type === MESSAGE_TYPE.ACK && message.mid) {
-        if (this.ackListeners.has(message.mid)) {
+      if (message.type === MESSAGE_TYPE.ACK) {
+        if (message.mid && this.ackListeners.has(message.mid)) {
           this.ackListeners.get(message.mid)?.(message);
           this.ackListeners.delete(message.mid);
         }
@@ -134,6 +134,7 @@ class SocketService {
         this.ackListeners.delete(mid);
         resolve(ack);
       });
+      console.log('=======:', message)
 
       if (message.type !== MESSAGE_TYPE.ACK) {
         this.socket!.emit('Message', message);
