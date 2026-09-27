@@ -1,6 +1,36 @@
 import { tool } from 'langchain';
 import * as z from 'zod';
 
+type UserRecord = {
+  name: string;
+  email: string;
+};
+
+type UserLoader = () => Promise<UserRecord[]>;
+
+let userLoader: UserLoader | undefined;
+
+/** Configure the database-backed user loader used by the get_user tool. */
+export const configureUserLoader = (loader: UserLoader): void => {
+  userLoader = loader;
+};
+
+export const getUser = tool(
+  async () => {
+    if (!userLoader) {
+      throw new Error('User loader has not been configured');
+    }
+
+    const users = await userLoader();
+    return users.map((user) => `${user.name},${user.email}`).join('\n');
+  },
+  {
+    name: 'get_user',
+    description: '获取当前项目数据库 user 表中的所有用户',
+    schema: z.object({}),
+  },
+);
+
 const getWeather = tool((input) => `都是大太阳 ${input.city}!`, {
   name: 'get_weather',
   description: 'Get the weather for a given city',
@@ -40,6 +70,7 @@ const file_save = tool(
 );
 
 export const tools = [
+  getUser,
   getWeather,
   file_save,
   count,
