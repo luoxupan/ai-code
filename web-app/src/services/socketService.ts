@@ -134,7 +134,6 @@ class SocketService {
         this.ackListeners.delete(mid);
         resolve(ack);
       });
-      console.log('=======:', message)
 
       if (message.type !== MESSAGE_TYPE.ACK) {
         this.socket!.emit('Message', message);
