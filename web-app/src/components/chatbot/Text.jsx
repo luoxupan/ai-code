@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { SUB_TYPE } from '../../constants/chat.ts';
 import './Text.css';
+
+export const messageType = SUB_TYPE.PLAIN_TEXT;
 
 const hasMarkdownSyntax = (value) => {
   if (typeof value !== 'string') {

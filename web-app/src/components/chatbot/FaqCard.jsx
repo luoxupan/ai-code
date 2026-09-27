@@ -1,6 +1,9 @@
 import React from 'react';
 import MessageCard from './MessageCard.jsx';
+import { SUB_TYPE } from '../../constants/chat.ts';
 import { parseJsonContent } from './contentUtils.js';
+
+export const messageType = SUB_TYPE.FAQ_CARD;
 
 const FaqCard = ({ content }) => {
   const parsedContent = parseJsonContent(content, {
