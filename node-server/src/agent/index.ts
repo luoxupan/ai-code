@@ -3,11 +3,8 @@ import { BaseChatModel, BindToolsInput } from '@langchain/core/language_models/c
 import { BaseMessage } from '@langchain/core/messages';
 import { ChatResult } from '@langchain/core/outputs';
 import { createAgent, createMiddleware, ToolMessage } from 'langchain';
-import { ModelConf } from '../../model';
 import { tools } from './tools';
-
-const base_url = 'https://api.deepseek.com/';
-const token = ModelConf.token;
+import { MODEL_CONF } from './conf';
 
 type DeepSeekTool = {
   type: 'function';
@@ -88,14 +85,14 @@ class DeepSeekChatModel extends BaseChatModel {
   }
 
   async _generate(messages: BaseMessage[]): Promise<ChatResult> {
-    const response = await fetch(`${base_url.replace(/\/$/, '')}/chat/completions`, {
+    const response = await fetch(MODEL_CONF.base_url, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${MODEL_CONF.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: MODEL_CONF.model,
         messages: messages.map((message) => this.toApiMessage(message)),
         ...(this.tools ? { tools: this.tools } : {}),
         ...(this.toolChoice ? { tool_choice: this.toolChoice } : {}),
