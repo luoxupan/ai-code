@@ -6,6 +6,7 @@ import UserMessage from '../components/chatbot/UserMessage.jsx';
 import SystemMessage from '../components/chatbot/SystemMessage.jsx';
 import MessageRenderer from '../components/chatbot/MessageRenderer.jsx';
 import MessageInput from '../components/chatbot/MessageInput.jsx';
+import { sendChatMessage } from '../components/chatbot/sendChatMessage.js';
 import './ChatbotPage.css';
 
 const CHAT_HISTORY_KEY = 'chatbot_history';
@@ -80,7 +81,11 @@ const ChatbotPage = () => {
         {messages.map((msg, index) => {
           const MessageContainer = msg.sender === 'user' ? UserMessage : SystemMessage;
           return (
-            <MessageContainer key={msg.mid || index} status={msg.status}>
+            <MessageContainer
+              key={msg.mid || index}
+              status={msg.status}
+              onRetry={() => sendChatMessage(msg, setMessages)}
+            >
               <MessageRenderer message={msg} />
             </MessageContainer>
           );

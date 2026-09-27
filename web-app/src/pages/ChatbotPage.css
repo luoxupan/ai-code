@@ -199,6 +199,17 @@
   font-weight: 700;
 }
 
+.message-retry-button {
+  margin-left: 0.05rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #ff5a6a;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .message-input-container {
   display: flex;
   gap: 0.1rem;

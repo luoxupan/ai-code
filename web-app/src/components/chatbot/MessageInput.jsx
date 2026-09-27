@@ -2,8 +2,8 @@ import React from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { v4 as uuidv4 } from 'uuid';
 import { inputTextAtom, messagesAtom } from '../../store/chatbotAtoms.ts';
-import { socketService } from '../../services/socketService.ts';
 import { MESSAGE_TYPE, SUB_TYPE } from '../../constants/chat.ts';
+import { sendChatMessage } from './sendChatMessage.js';
 
 const MessageInput = () => {
   const [text, setText] = useAtom(inputTextAtom);
@@ -29,19 +29,7 @@ const MessageInput = () => {
     setMessages(prev => [...prev, newMessage]);
     setText('');
 
-    try {
-      await socketService.sendMessage(newMessage);
-      // On successful ACK, update message status
-      setMessages(prev =>
-        prev.map(msg => (msg.mid === mid ? { ...msg, status: 'success' } : msg))
-      );
-    } catch (error) {
-      console.error(error);
-      // On failure (timeout), update message status
-      setMessages(prev =>
-        prev.map(msg => (msg.mid === mid ? { ...msg, status: 'failed' } : msg))
-      );
-    }
+    await sendChatMessage(newMessage, setMessages);
   };
 
   return (
