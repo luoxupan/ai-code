@@ -5,10 +5,7 @@
   max-width: 7.5rem;
   margin: 0 auto;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 12% 12%, rgba(0, 255, 170, 0.12), transparent 32%),
-    radial-gradient(circle at 88% 76%, rgba(0, 212, 255, 0.08), transparent 36%),
-    #ffffff;
+  background:#e9eaea4f;
   color: #1f2937;
   font-family: 'JetBrains Mono', monospace;
 }
@@ -42,9 +39,7 @@
 .header__avatar {
   width: 0.44rem;
   height: 0.44rem;
-  border: 0.01rem solid rgba(0, 191, 129, 0.3);
-  background: linear-gradient(140deg, rgba(0, 255, 170, 0.22), rgba(0, 212, 255, 0.1));
-  color: #078f68;
+  border: 0.01rem solid var(--text-primary);
   font-size: 0.14rem;
   font-weight: 700;
 }
@@ -83,9 +78,9 @@
 }
 
 .connection-pill--connected {
-  border-color: rgba(0, 191, 129, 0.38);
+  border-color: var(--text-primary);
   color: #078f68;
-  box-shadow: 0 0.08rem 0.16rem rgba(0, 191, 129, 0.12);
+  box-shadow: 0 0.08rem 0.16rem var(--text-primary);
 }
 
 .connection-pill--connecting {
@@ -121,7 +116,7 @@
   place-content: center;
   gap: 0.05rem;
   padding: 0.2rem;
-  border: 0.01rem dashed rgba(0, 191, 129, 0.28);
+  border: 0.01rem dashed var(--text-primary);
   border-radius: 0.16rem;
   background: #ffffff;
   color: #6b7280;
@@ -131,7 +126,7 @@
 .empty-state span {
   color: #078f68;
   font-size: 0.28rem;
-  text-shadow: 0 0 0.12rem rgba(0, 255, 170, 0.4);
+  text-shadow: 0 0 0.12rem var(--text-primary);
 }
 
 .empty-state strong {
@@ -170,11 +165,11 @@
 }
 
 .user-message-content {
-  border: 0.01rem solid rgba(0, 191, 129, 0.24);
+  border: 0.01rem solid rgb(177 188 190 / 78%);
   border-bottom-right-radius: 0.05rem;
-  background: linear-gradient(135deg, rgba(0, 255, 170, 0.88), rgba(0, 212, 255, 0.78));
+  background: rgb(177 188 190 / 78%);
   color: #062018;
-  box-shadow: 0 0.06rem 0.2rem rgba(0, 191, 129, 0.18);
+  box-shadow: 0 0.06rem 0.2rem rgb(177 188 190 / 78%);
 }
 
 .message-avatar {
@@ -184,15 +179,12 @@
 }
 
 .message-avatar--system {
-  border: 0.01rem solid rgba(7, 139, 171, 0.24);
-  background: rgba(0, 212, 255, 0.1);
-  color: #078bab;
+  border: 0.01rem solid var(--text-primary);
 }
 
 .message-avatar--user {
-  border: 0.01rem solid rgba(0, 191, 129, 0.3);
-  background: rgba(0, 255, 170, 0.12);
-  color: #078f68;
+  border: 0.01rem solid var(--text-primary);
+  background: rgb(177 188 190 / 78%);
 }
 
 .message-status {
@@ -243,7 +235,7 @@
   padding: 0 0.2rem;
   border: 0.01rem solid rgba(0, 191, 129, 0.28);
   border-radius: 0.16rem;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  background: var(--accent-primary);
   color: #062018;
   font-family: inherit;
   font-size: 0.12rem;

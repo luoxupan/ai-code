@@ -12,7 +12,7 @@ const UserMessage = ({ children, status }) => {
         {children}
         {statusText && <div className={`message-status${status === 'failed' ? ' message-status--failed' : ''}`}>{statusText}</div>}
       </div>
-      <div className="message-avatar message-avatar--user" aria-hidden="true">我</div>
+      {/* <div className="message-avatar message-avatar--user" aria-hidden="true">我</div> */}
     </div>
   );
 };
