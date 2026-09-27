@@ -115,7 +115,7 @@ class DeepSeekChatModel extends BaseChatModel {
 
     if (!response.ok) {
       throw new Error(
-        `DeepSeek request failed (${response.status}): ${payload.error?.message ?? 'unknown error'}`,
+        `request failed (${response.status}): ${payload.error?.message ?? 'unknown error'}`,
       );
     }
 

@@ -46,7 +46,11 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
       });
       let content = data?.payload?.content;
       if (data?.payload?.content) {
-        content = await invokeAgent(data?.payload?.content);
+        try {
+          content = await invokeAgent(data?.payload?.content);
+        } catch (e: any) {
+          content = e?.message || 'Error';
+        }
       }
       client.emit('Message', {
         ...data,
