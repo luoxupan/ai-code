@@ -4,7 +4,7 @@ const OrderCard = ({ content }) => {
 
   return (
     <div className="text-card">
-      <p dangerouslySetInnerHTML={{ __html: content }}></p>
+      <div dangerouslySetInnerHTML={{ __html: content }}></div>
     </div>
   );
 };
