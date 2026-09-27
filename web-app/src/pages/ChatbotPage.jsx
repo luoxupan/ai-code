@@ -57,10 +57,26 @@ const ChatbotPage = () => {
   return (
     <div className="chatbot-page">
       <div className="header">
-        <h1>Chatbot</h1>
-        <p>Connection Status: {status}</p>
+        <div className="header__identity">
+          <span className="header__avatar" aria-hidden="true">AI</span>
+          <div>
+            <h1>智能客服</h1>
+            <p>实时会话 · WebSocket</p>
+          </div>
+        </div>
+        <div className={`connection-pill connection-pill--${status}`}>
+          <span className="connection-dot" aria-hidden="true" />
+          {status === 'connected' ? '在线' : status === 'connecting' ? '连接中' : '离线'}
+        </div>
       </div>
-      <div className="message-list">
+      <div className="message-list" role="log" aria-live="polite" aria-label="聊天消息">
+        {messages.length === 0 && (
+          <div className="empty-state">
+            <span aria-hidden="true">⚡</span>
+            <strong>会话已就绪</strong>
+            <p>发送第一条消息，开始与智能客服对话</p>
+          </div>
+        )}
         {messages.map((msg, index) => {
           const MessageContainer = msg.sender === 'user' ? UserMessage : SystemMessage;
           return (

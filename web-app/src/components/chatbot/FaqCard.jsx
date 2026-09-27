@@ -1,22 +1,18 @@
 import React from 'react';
+import MessageCard from './MessageCard.jsx';
+import { parseJsonContent } from './contentUtils.js';
 
 const FaqCard = ({ content }) => {
-  // Assuming content is a JSON string with question and answer
-  let parsedContent = { question: 'N/A', answer: 'N/A' };
-  try {
-    parsedContent = JSON.parse(content);
-  } catch (e) {
-    console.error("Failed to parse FaqCard content", content);
-  }
-
-  React.useCallback;
-  React.useMemo;
+  const parsedContent = parseJsonContent(content, {
+    question: typeof content === 'string' ? content : '暂无问题',
+    answer: '',
+  })
 
   return (
-    <div className="faq-card">
-      <p><strong>问题：{parsedContent.question}</strong></p>
-      <p>答案：{parsedContent.answer}</p>
-    </div>
+    <MessageCard icon="?" label="FAQ">
+      <h3 className="faq-question">{parsedContent.question}</h3>
+      <p className="faq-answer">{parsedContent.answer || '暂无答案'}</p>
+    </MessageCard>
   );
 };
 

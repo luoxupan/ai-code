@@ -39,7 +39,7 @@ const hasMarkdownSyntax = (value) => {
 
 const Text = ({ content }) => {
   if (!hasMarkdownSyntax(content)) {
-    return <div className="markdown-plain" dangerouslySetInnerHTML={{ __html: typeof content === 'string' ? content : String(content ?? '')}}></div>;
+    return <div className="markdown-plain">{content}</div>;
   }
 
   return (

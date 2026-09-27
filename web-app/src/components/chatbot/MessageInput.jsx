@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { v4 as uuidv4 } from 'uuid';
 import { inputTextAtom, messagesAtom } from '../../store/chatbotAtoms.ts';
 import { socketService } from '../../services/socketService.ts';
@@ -7,9 +7,10 @@ import { MESSAGE_TYPE, SUB_TYPE } from '../../constants/chat.ts';
 
 const MessageInput = () => {
   const [text, setText] = useAtom(inputTextAtom);
-  const [messages, setMessages] = useAtom(messagesAtom);
+  const setMessages = useSetAtom(messagesAtom);
 
-  const handleSend = async () => {
+  const handleSend = async (event) => {
+    event.preventDefault();
     if (!text.trim()) return;
 
     const mid = uuidv4();
@@ -25,7 +26,7 @@ const MessageInput = () => {
     };
 
     // Optimistically update the UI
-    setMessages([...messages, newMessage]);
+    setMessages(prev => [...prev, newMessage]);
     setText('');
 
     try {
@@ -43,23 +44,17 @@ const MessageInput = () => {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSend();
-    }
-  };
-
   return (
-    <div className="message-input-container">
+    <form className="message-input-container" onSubmit={handleSend}>
       <input
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onKeyPress={handleKeyPress}
+        aria-label="输入消息"
         placeholder="请输入消息..."
       />
-      <button onClick={handleSend}>发送</button>
-    </div>
+      <button type="submit" disabled={!text.trim()}>发送</button>
+    </form>
   );
 };
 

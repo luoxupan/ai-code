@@ -1,5 +1,6 @@
 import React from 'react';
 import { messageComponentMap } from './index.ts';
+import Text from './Text.jsx';
 import { MESSAGE_TYPE } from '../../constants/chat.ts';
 
 const MessageRenderer = ({ message }) => {
@@ -19,15 +20,11 @@ const MessageRenderer = ({ message }) => {
 
   // For chat messages (type 5), use the component map
   if (type === MESSAGE_TYPE.CHAT) {
-    const Component = messageComponentMap[subType];
-    if (Component) {
-      return <Component content={payload.content} />;
-    }
+    const Component = messageComponentMap[subType] ?? Text;
+    return <Component content={payload.content} />;
   }
 
-  // Fallback for any other message type that has content: display the raw content.
-  // This primarily handles the user's plain text messages (subType 0).
-  return <div>{payload.content}</div>;
+  return <Text content={payload.content} />;
 };
 
 export default MessageRenderer;

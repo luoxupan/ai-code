@@ -1,21 +1,29 @@
 import React from 'react';
+import MessageCard from './MessageCard.jsx';
+import { parseJsonContent } from './contentUtils.js';
 
 const OrderCard = ({ content }) => {
-  // Assuming content is a JSON string with order details
-  let parsedContent = { orderId: 'N/A', amount: 'N/A', status: 'N/A' };
-  try {
-    parsedContent = JSON.parse(content);
-  } catch (e) {
-    console.error("Failed to parse OrderCard content", content);
-  }
+  const order = parseJsonContent(content, {})
+  const amount = Number(order.amount)
+  const isValidAmount = Number.isFinite(amount)
 
   return (
-    <div className="order-card">
-      <p><strong>订单详情：</strong></p>
-      <p>订单号：{parsedContent.orderId}</p>
-      <p>金额：¥{parsedContent.amount}</p>
-      <p>状态：{parsedContent.status}</p>
-    </div>
+    <MessageCard icon="📦" label="订单详情">
+      <div className="order-amount">
+        <span>订单金额</span>
+        <strong>{isValidAmount ? `¥${amount.toFixed(2)}` : '待确认'}</strong>
+      </div>
+      <dl className="order-fields">
+        <div>
+          <dt>订单号</dt>
+          <dd>{order.orderId || '暂无'}</dd>
+        </div>
+        <div>
+          <dt>状态</dt>
+          <dd><span className="order-status">{order.status || '未知'}</span></dd>
+        </div>
+      </dl>
+    </MessageCard>
   );
 };
 
