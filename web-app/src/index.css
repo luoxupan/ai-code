@@ -29,8 +29,8 @@ body {
 }
 
 h1, p, div, span, a {
-  font-size: 0.2rem;
-  line-height: 1.1;
+  /* font-size: 0.2rem; */
+  /* line-height: 1.1; */
 }
 
 button {
