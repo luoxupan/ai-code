@@ -55,12 +55,12 @@
 
 .markdown-body code {
   padding: 0.15em 0.3em;
-  border: 0.01em solid rgba(0, 255, 170, 0.18);
   border-radius: 0.05em;
   background: rgba(0, 255, 170, 0.08);
-  color: var(--accent-primary);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9em;
+  background: #818b9838;
+  border-radius: 6px;
 }
 
 .markdown-body pre {
