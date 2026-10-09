@@ -1,5 +1,5 @@
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
 @Injectable()
@@ -21,6 +21,26 @@ export class WebsocketService {
       return true;
     }
     return false;
+  }
+
+  postMessage(message: string, wsClientId?: string) {
+    if (wsClientId) {
+      const client = this.clients.get(wsClientId);
+      if (!client) {
+        throw new NotFoundException(`WebSocket client ${wsClientId} not found`);
+      }
+      client.emit('Message', message);
+      return {
+        deliveredCount: 1,
+      };
+    }
+
+    for (const client of this.clients.values()) {
+      client.emit('Message', message);
+    }
+    return {
+      deliveredCount: this.clients.size,
+    };
   }
 
   getClients(): Map<string, Socket> {
