@@ -1,6 +1,7 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Socket } from 'socket.io';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class WebsocketService {
@@ -29,14 +30,30 @@ export class WebsocketService {
       if (!client) {
         throw new NotFoundException(`WebSocket client ${wsClientId} not found`);
       }
-      client.emit('Message', message);
+      client.emit('Message', {
+        mid: uuidv4(),
+        subType: 0,
+        type: 5,
+        sender: 'system',
+        payload: {
+          content: message,
+        }
+      });
       return {
         deliveredCount: 1,
       };
     }
 
     for (const client of this.clients.values()) {
-      client.emit('Message', message);
+      client.emit('Message', {
+        mid: uuidv4(),
+        subType: 0,
+        type: 5,
+        sender: 'system',
+        payload: {
+          content: message,
+        }
+      });
     }
     return {
       deliveredCount: this.clients.size,

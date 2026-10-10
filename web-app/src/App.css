@@ -17,7 +17,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.16rem 0.32rem;
+  padding: 0.05rem 0.32rem;
   background: rgba(10, 10, 15, 0.8);
   backdrop-filter: blur(0.1rem);
   border-bottom: 0.01rem solid var(--border-color);
@@ -31,10 +31,13 @@
 .nav-logo {
   display: flex;
   gap: 0.16rem;
+  font-size: 0.2rem;
+  a {
+    height: 40px;
+  }
 }
 
 .logo {
-  height: 0.64rem;
   padding: 0.08rem;
   will-change: filter;
   transition: filter 300ms;
@@ -76,6 +79,7 @@
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 500;
   transition: all 0.3s ease;
+  font-size: 0.2rem;
 }
 
 .nav-link:hover {
