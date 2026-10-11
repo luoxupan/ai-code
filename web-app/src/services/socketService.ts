@@ -42,6 +42,9 @@ class SocketService {
     this.connectionPromise = new Promise((resolve, reject) => {
       this.socket = io(SOCKET_URL, {
         transports: ['websocket'],
+        auth: {
+          sessionId: '123123dsds',
+        }
       });
       this.setStatus('connecting');
 

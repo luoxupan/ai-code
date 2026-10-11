@@ -37,7 +37,8 @@ export class WebsocketGateway
   constructor(private readonly websocketService: WebsocketService) {}
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    const { sessionId } = client.handshake.auth;
+    console.log(`Client connected: ${client.id}`, sessionId);
     this.websocketService.addClient(client);
   }
 

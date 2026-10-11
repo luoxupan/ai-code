@@ -1,11 +1,19 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+import { Repository } from 'typeorm';
+import { Session } from './entities/session.entity';
 
 @Injectable()
 export class WebsocketService {
   private readonly clients = new Map<string, Socket>();
+
+  constructor(
+    @InjectRepository(Session)
+    private readonly sessionRepository: Repository<Session>,
+  ) {}
 
   addClient(client: Socket) {
     this.clients.set(client.id, client);
@@ -62,5 +70,9 @@ export class WebsocketService {
 
   getClients(): Map<string, Socket> {
     return this.clients;
+  }
+
+  getSessionInfo(user_id: string): Promise<Session | null> {
+    return this.sessionRepository.findOneBy({ user_id });
   }
 }

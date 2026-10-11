@@ -7,7 +7,6 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import TablePage from './pages/TablePage.jsx'
 import CounterDisplay from './components/CounterDisplay'
-import WebSocketPage from './pages/WebSocketPage.jsx'
 import ChatbotPage from './pages/ChatbotPage.jsx'
 import LivechatPage from './pages/LivechatPage.jsx'
 
@@ -45,7 +44,6 @@ function App() {
           <nav className="nav-links">
             <Link to="/" className="nav-link">首页</Link>
             <Link to="/table" className="nav-link">数据表格</Link>
-            <Link to="/websocket" className="nav-link">WebSocket</Link>
             <Link to="/chatbot" className="nav-link">Chatbot</Link>
             <Link to="/livechat" className="nav-link">Livechat</Link>
           </nav>
@@ -71,7 +69,6 @@ function App() {
             </div>
           } />
           <Route path="/table" element={<TablePage />} />
-          <Route path="/websocket" element={<WebSocketPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/livechat" element={<LivechatPage />} />
         </Routes>
