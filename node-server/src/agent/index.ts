@@ -201,9 +201,10 @@ export const deleteAgentMemory = async (threadId: string): Promise<void> => {
 export const invokeAgent = async (
   message: string,
   threadId?: string,
+  wsClientId?: string,
 ): Promise<string> => {
   const agent = await getAgent();
-  const response = await runWithAgentContext(threadId ?? '', () =>
+  const response = await runWithAgentContext(wsClientId ?? threadId ?? '', () =>
     agent.invoke(
       {
         messages: [

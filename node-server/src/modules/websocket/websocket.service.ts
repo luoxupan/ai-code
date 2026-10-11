@@ -6,9 +6,16 @@ import { Repository } from 'typeorm';
 import { configureDisconnectHandler } from '../../agent/tools';
 import { Session, SessionStatus } from './entities/session.entity';
 
+type SessionConnection = {
+  user_id: string;
+  wsClientId: string;
+};
+
 @Injectable()
 export class WebsocketService implements OnModuleInit {
   private readonly clients = new Map<string, Socket>();
+  private readonly sessionConnections = new Map<string, SessionConnection>();
+  private readonly sessionIdsByClientId = new Map<string, string>();
 
   constructor(
     @InjectRepository(Session)
@@ -25,8 +32,22 @@ export class WebsocketService implements OnModuleInit {
     this.clients.set(client.id, client);
   }
 
+  registerSessionConnection(
+    sessionId: string,
+    userId: string,
+    wsClientId: string,
+  ) {
+    this.sessionConnections.set(sessionId, { user_id: userId, wsClientId });
+    this.sessionIdsByClientId.set(wsClientId, sessionId);
+  }
+
+  getSessionIdByClientId(wsClientId: string): string | undefined {
+    return this.sessionIdsByClientId.get(wsClientId);
+  }
+
   removeClient(clientId: string) {
     this.clients.delete(clientId);
+    this.sessionIdsByClientId.delete(clientId);
   }
 
   sendMessageToClient(clientId: string, message: any) {
@@ -120,12 +141,10 @@ export class WebsocketService implements OnModuleInit {
       return { user_id, session_id, session_status };
     }
 
-    return (
-      {
-        user_id,
-        session_id: uuidv4(),
-        session_status: SessionStatus.Temporary,
-      }
-    );
+    return {
+      user_id,
+      session_id: uuidv4(),
+      session_status: SessionStatus.Temporary,
+    };
   }
 }

@@ -10,7 +10,7 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { WebsocketService } from './websocket.service';
-import { deleteAgentMemory, invokeAgent } from '../../agent';
+import { invokeAgent } from '../../agent';
 
 type WebsocketMessage = {
   type?: number;
@@ -21,8 +21,8 @@ type WebsocketMessage = {
 
 type WebsocketAuth = {
   iconnect?: boolean;
-  session_id?: string;
-  user_id?: string;
+  session_id: string;
+  user_id: string;
 };
 
 @WebSocketGateway({
@@ -46,6 +46,11 @@ export class WebsocketGateway
     const auth = client.handshake.auth as WebsocketAuth;
     this.logger.log(`Client connected: ${client.id}`, auth.session_id);
     this.websocketService.addClient(client);
+    this.websocketService.registerSessionConnection(
+      auth.session_id,
+      auth.user_id,
+      client.id,
+    );
 
     if (auth.iconnect !== true || !auth.session_id || !auth.user_id) {
       return;
@@ -68,13 +73,6 @@ export class WebsocketGateway
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
     this.websocketService.removeClient(client.id);
-    void deleteAgentMemory(client.id).catch((error: unknown) => {
-      this.logger.error(
-        `Failed to clear memory for client ${client.id}: ${JSON.stringify(
-          error,
-        )}`,
-      );
-    });
   }
 
   @SubscribeMessage('Message')
@@ -94,7 +92,14 @@ export class WebsocketGateway
       let content = data?.payload?.content;
       if (data?.payload?.content) {
         try {
-          content = await invokeAgent(data?.payload?.content, client.id);
+          const sessionId = this.websocketService.getSessionIdByClientId(
+            client.id,
+          );
+          content = await invokeAgent(
+            data?.payload?.content,
+            sessionId ?? client.id,
+            client.id,
+          );
         } catch (error: unknown) {
           content = error instanceof Error ? error.message : 'Error';
         }
