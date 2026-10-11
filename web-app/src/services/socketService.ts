@@ -13,6 +13,7 @@ class SocketService {
   private ackListeners: Map<string, (ack: any) => void> = new Map();
   private statusListeners: Array<(status: Status) => void> = [];
   private connectionPromise: Promise<void> | null = null;
+  private sessionId = '123123dsds';
   public status: Status = 'disconnected';
 
   private constructor() {
@@ -43,7 +44,7 @@ class SocketService {
       this.socket = io(SOCKET_URL, {
         transports: ['websocket'],
         auth: {
-          sessionId: '123123dsds',
+          sessionId: this.sessionId,
         }
       });
       this.setStatus('connecting');
@@ -71,6 +72,10 @@ class SocketService {
     });
     
     return this.connectionPromise;
+  }
+
+  public setSessionId(sessionId: string) {
+    this.sessionId = sessionId;
   }
 
   private setupDefaultListeners() {

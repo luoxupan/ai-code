@@ -12,3 +12,8 @@ export const SUB_TYPE = {
   FAQ_CARD: 2,
   ORDER_CARD: 3,
 } as const;
+
+export const SESSION_STATUS = {
+  IN_PROGRESS: 1,
+  ENDED: 2,
+} as const;

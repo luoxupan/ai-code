@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
+import { useSearchParams } from 'react-router-dom';
 import { messagesAtom, replyPendingAtom, socketStatusAtom } from '../store/chatbotAtoms.ts';
 import { socketService } from '../services/socketService.ts';
+import { getSessionInfo } from '../services/sessionService.ts';
+import { SESSION_STATUS } from '../constants/chat.ts';
 import UserMessage from '../components/chatbot/UserMessage.jsx';
 import SystemMessage from '../components/chatbot/SystemMessage.jsx';
 import MessageRenderer from '../components/chatbot/MessageRenderer.jsx';
@@ -15,7 +18,10 @@ const ChatbotPage = () => {
   const [messages, setMessages] = useAtom(messagesAtom);
   const [status, setStatus] = useAtom(socketStatusAtom);
   const [replyPending, setReplyPending] = useAtom(replyPendingAtom);
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('userId');
   const messagesEndRef = useRef(null);
+  const sessionInitPromiseRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,17 +46,33 @@ const ChatbotPage = () => {
       setMessages((prev) => [...prev, newMessage]);
     });
 
-    // Initial connection
-    // socketService.connect().catch(err => {
-    //   console.error("Initial connection failed", err);
-    // });
+    const initializeSession = async () => {
+      const sessionInfo = (await getSessionInfo(userId))?.data;
+      console.log('sessionInfo:', sessionInfo)
+      if (!sessionInfo) return;
+
+      socketService.setSessionId(sessionInfo.session_id);
+      if (sessionInfo.session_status === SESSION_STATUS.IN_PROGRESS) {
+        await socketService.connect();
+      }
+    };
+
+    if (!sessionInitPromiseRef.current) {
+      sessionInitPromiseRef.current = initializeSession().finally(() => {
+        sessionInitPromiseRef.current = null;
+      });
+    }
+
+    sessionInitPromiseRef.current.catch(error => {
+      console.error('初始化会话信息失败', error);
+    });
 
     return () => {
       unsubscribeStatus();
       unsubscribeMessage();
       socketService.disconnect();
     };
-  }, [setMessages, setReplyPending, setStatus]);
+  }, [setMessages, setReplyPending, setStatus, userId]);
 
   // Save history to localStorage whenever it changes
   useEffect(() => {

@@ -230,15 +230,17 @@
   height: 0.05rem;
   margin-right: 0.02rem;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: #d9d9d9;
   animation: reply-pending-bounce 1s ease-in-out infinite;
 }
 
 .reply-pending__dot:nth-child(2) {
+  background: #000000;
   animation-delay: 0.15s;
 }
 
 .reply-pending__dot:nth-child(3) {
+  background: #000000;
   animation-delay: 0.3s;
 }
 
