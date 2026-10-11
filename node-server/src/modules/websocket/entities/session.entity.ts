@@ -3,6 +3,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 export enum SessionStatus {
   InProgress = 1,
   Ended = 2,
+  Temporary = 3,
 }
 
 @Entity('session')
@@ -24,4 +25,10 @@ export class Session {
     type: 'tinyint',
   })
   session_status: SessionStatus;
+
+  @Column({
+    name: 'timestamp',
+    type: 'bigint',
+  })
+  timestamp: number;
 }

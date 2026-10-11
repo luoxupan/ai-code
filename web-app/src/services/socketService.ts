@@ -1,10 +1,11 @@
 import { io, Socket } from 'socket.io-client';
-import { MESSAGE_TYPE } from '../constants/chat';
+import { MESSAGE_TYPE, SESSION_STATUS } from '../constants/chat';
 
 const SOCKET_URL = 'ws://localhost:3002'; // Replace with your actual WebSocket server URL
 const SEND_TIMEOUT = 6000; // 6 seconds
 
 type Status = 'connecting' | 'connected' | 'disconnected';
+type SessionStatus = typeof SESSION_STATUS[keyof typeof SESSION_STATUS];
 
 class SocketService {
   private static instance: SocketService;
@@ -13,7 +14,10 @@ class SocketService {
   private ackListeners: Map<string, (ack: any) => void> = new Map();
   private statusListeners: Array<(status: Status) => void> = [];
   private connectionPromise: Promise<void> | null = null;
-  private sessionId = '123123dsds';
+  private sessionId = '';
+  private userId = '';
+  private sessionStatus: SessionStatus = SESSION_STATUS.ENDED;
+  private shouldConnectWithTemporaryAuth = false;
   public status: Status = 'disconnected';
 
   private constructor() {
@@ -43,9 +47,7 @@ class SocketService {
     this.connectionPromise = new Promise((resolve, reject) => {
       this.socket = io(SOCKET_URL, {
         transports: ['websocket'],
-        auth: {
-          sessionId: this.sessionId,
-        }
+        auth: this.createAuth(),
       });
       this.setStatus('connecting');
 
@@ -53,6 +55,7 @@ class SocketService {
         console.log('Socket.IO connected');
         this.setStatus('connected');
         this.setupDefaultListeners();
+          this.shouldConnectWithTemporaryAuth = false;
         this.connectionPromise = null;
         resolve();
       });
@@ -74,8 +77,24 @@ class SocketService {
     return this.connectionPromise;
   }
 
-  public setSessionId(sessionId: string) {
+  private createAuth() {
+    const auth: Record<string, unknown> = {
+      user_id: this.userId,
+    };
+
+    if (this.shouldConnectWithTemporaryAuth) {
+      auth.iconnect = true;
+      auth.session_id = this.sessionId;
+    }
+
+    return auth;
+  }
+
+  public setSessionInfo(userId: string, sessionId: string, sessionStatus: SessionStatus) {
+    this.userId = userId;
     this.sessionId = sessionId;
+    this.sessionStatus = sessionStatus;
+    this.shouldConnectWithTemporaryAuth = sessionStatus === SESSION_STATUS.TEMPORARY;
   }
 
   private setupDefaultListeners() {

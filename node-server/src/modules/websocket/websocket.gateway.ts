@@ -19,6 +19,12 @@ type WebsocketMessage = {
   };
 };
 
+type WebsocketAuth = {
+  iconnect?: boolean;
+  session_id?: string;
+  user_id?: string;
+};
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -36,10 +42,27 @@ export class WebsocketGateway
 
   constructor(private readonly websocketService: WebsocketService) {}
 
-  handleConnection(client: Socket) {
-    const { sessionId } = client.handshake.auth;
-    console.log(`Client connected: ${client.id}`, sessionId);
+  async handleConnection(client: Socket) {
+    const auth = client.handshake.auth as WebsocketAuth;
+    this.logger.log(`Client connected: ${client.id}`, auth.session_id);
     this.websocketService.addClient(client);
+
+    if (auth.iconnect !== true || !auth.session_id || !auth.user_id) {
+      return;
+    }
+
+    try {
+      await this.websocketService.createInitialSession(
+        auth.session_id,
+        auth.user_id,
+      );
+    } catch (error: unknown) {
+      this.logger.error(
+        `Failed to create session for client ${client.id}: ${JSON.stringify(
+          error,
+        )}`,
+      );
+    }
   }
 
   handleDisconnect(client: Socket) {

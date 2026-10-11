@@ -4,7 +4,7 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { Repository } from 'typeorm';
 import { configureDisconnectHandler } from '../../agent/tools';
-import { Session } from './entities/session.entity';
+import { Session, SessionStatus } from './entities/session.entity';
 
 @Injectable()
 export class WebsocketService implements OnModuleInit {
@@ -98,7 +98,34 @@ export class WebsocketService implements OnModuleInit {
     return true;
   }
 
-  getSessionInfo(user_id: string): Promise<Session | null> {
-    return this.sessionRepository.findOneBy({ user_id });
+  async createInitialSession(sessionId: string, userId: string): Promise<void> {
+    await this.sessionRepository.save({
+      session_id: sessionId,
+      user_id: userId,
+      session_status: SessionStatus.InProgress,
+      timestamp: Date.now(),
+    });
+  }
+
+  async getSessionInfo(
+    user_id: string,
+  ): Promise<Pick<Session, 'user_id' | 'session_id' | 'session_status'>> {
+    const session = await this.sessionRepository.findOne({
+      where: { user_id },
+      order: { timestamp: 'DESC' },
+    });
+
+    if (session) {
+      const { user_id, session_id, session_status } = session;
+      return { user_id, session_id, session_status };
+    }
+
+    return (
+      {
+        user_id,
+        session_id: uuidv4(),
+        session_status: SessionStatus.Temporary,
+      }
+    );
   }
 }

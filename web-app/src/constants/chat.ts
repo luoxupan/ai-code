@@ -16,4 +16,5 @@ export const SUB_TYPE = {
 export const SESSION_STATUS = {
   IN_PROGRESS: 1,
   ENDED: 2,
+  TEMPORARY: 3,
 } as const;

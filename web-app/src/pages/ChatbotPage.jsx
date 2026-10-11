@@ -50,7 +50,7 @@ const ChatbotPage = () => {
       const sessionInfo = (await getSessionInfo(userId))?.data;
       if (!sessionInfo) return;
 
-      socketService.setSessionId(sessionInfo.session_id);
+      socketService.setSessionInfo(userId, sessionInfo.session_id, sessionInfo.session_status);
       if (sessionInfo.session_status === SESSION_STATUS.IN_PROGRESS) {
         await socketService.connect();
       }
