@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { SocketIoAdapter } from './adapters/socket-io.adapter';
 import { TransformInterceptor } from './interceptor/transform.interceptor';
-
+ 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -16,7 +16,7 @@ async function bootstrap() {
   // 安全防护
   app.use(helmet());
 
-
+ 
   // 开启CORS
   app.enableCors();
 

@@ -1,8 +1,14 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { Repository } from 'typeorm';
+import { deleteAgentMemory } from '../../agent';
 import { configureDisconnectHandler } from '../../agent/tools';
 import { Session, SessionStatus } from './entities/session.entity';
 
@@ -13,6 +19,7 @@ type SessionConnection = {
 
 @Injectable()
 export class WebsocketService implements OnModuleInit {
+  private readonly logger = new Logger(WebsocketService.name);
   private readonly clients = new Map<string, Socket>();
   private readonly sessionConnections = new Map<string, SessionConnection>();
   private readonly sessionIdsByClientId = new Map<string, string>();
@@ -49,9 +56,29 @@ export class WebsocketService implements OnModuleInit {
     return this.sessionConnections.get(sessionId)?.wsClientId;
   }
 
-  removeClient(clientId: string) {
+  async removeClient(clientId: string): Promise<void> {
+    const sessionId = this.sessionIdsByClientId.get(clientId);
     this.clients.delete(clientId);
     this.sessionIdsByClientId.delete(clientId);
+
+    if (!sessionId) {
+      return;
+    }
+
+    const sessionConnection = this.sessionConnections.get(sessionId);
+    if (sessionConnection?.wsClientId === clientId) {
+      this.sessionConnections.delete(sessionId);
+    }
+
+    try {
+      await deleteAgentMemory(sessionId);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Failed to delete agent memory for session ${sessionId}: ${JSON.stringify(
+          error,
+        )}`,
+      );
+    }
   }
 
   sendMessageToClient(clientId: string, message: any) {

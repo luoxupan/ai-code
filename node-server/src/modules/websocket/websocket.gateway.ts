@@ -71,9 +71,9 @@ export class WebsocketGateway
     }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    this.websocketService.removeClient(client.id);
+    await this.websocketService.removeClient(client.id);
   }
 
   @SubscribeMessage('Message')
