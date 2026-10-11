@@ -24,7 +24,7 @@ function LivechatPage() {
     <div className="livechat-page">
       <form className="livechat-form" onSubmit={handleSubmit}>
         <input
-          className="livechat-input"
+          className="livechat-session-input"
           value={sessionId}
           placeholder="请输入 sessionId"
           onChange={(event) => setSessionId(event.target.value)}
