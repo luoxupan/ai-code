@@ -1,5 +1,6 @@
 import { tool } from 'langchain';
 import * as z from 'zod';
+import { getAgentContext } from '../context';
 
 type UserRecord = {
   name: string;
@@ -7,6 +8,17 @@ type UserRecord = {
 };
 
 type UserLoader = () => Promise<UserRecord[]>;
+
+type DisconnectHandler = (wsClientId: string) => Promise<boolean> | boolean;
+
+let disconnectHandler: DisconnectHandler | undefined;
+
+/** Configure the WebSocket disconnect handler used by the disconnect tool. */
+export const configureDisconnectHandler = (
+  handler: DisconnectHandler,
+): void => {
+  disconnectHandler = handler;
+};
 
 let userLoader: UserLoader | undefined;
 
@@ -27,6 +39,30 @@ export const getUser = tool(
   {
     name: 'get_user',
     description: '获取当前项目数据库 user 表中的所有用户',
+    schema: z.object({}),
+  },
+);
+
+export const disconnectWebsocket = tool(
+  async () => {
+    const wsClientId = getAgentContext()?.wsClientId;
+
+    if (!wsClientId) {
+      throw new Error('WebSocket client context is not available');
+    }
+
+    if (!disconnectHandler) {
+      throw new Error('WebSocket disconnect handler has not been configured');
+    }
+
+    const disconnected = await disconnectHandler(wsClientId);
+    return disconnected
+      ? `WebSocket ${wsClientId} 已断开`
+      : `WebSocket ${wsClientId} 不存在`;
+  },
+  {
+    name: 'disconnect_websocket',
+    description: '断开当前 WebSocket 连接',
     schema: z.object({}),
   },
 );
@@ -71,6 +107,7 @@ const file_save = tool(
 
 export const tools = [
   getUser,
+  disconnectWebsocket,
   getWeather,
   file_save,
   count,

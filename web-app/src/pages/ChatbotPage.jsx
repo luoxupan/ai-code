@@ -48,7 +48,6 @@ const ChatbotPage = () => {
 
     const initializeSession = async () => {
       const sessionInfo = (await getSessionInfo(userId))?.data;
-      console.log('sessionInfo:', sessionInfo)
       if (!sessionInfo) return;
 
       socketService.setSessionId(sessionInfo.session_id);

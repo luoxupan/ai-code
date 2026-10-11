@@ -8,6 +8,7 @@ import { ChatResult } from '@langchain/core/outputs';
 import { MemorySaver } from '@langchain/langgraph-checkpoint';
 import { createAgent, createMiddleware, ToolMessage } from 'langchain';
 import { tools } from './tools';
+import { runWithAgentContext } from './context';
 import { MODEL_CONF } from './conf';
 
 type DeepSeekTool = {
@@ -202,22 +203,24 @@ export const invokeAgent = async (
   threadId?: string,
 ): Promise<string> => {
   const agent = await getAgent();
-  const response = await agent.invoke(
-    {
-      messages: [
-        {
-          role: 'user',
-          content: message,
-        },
-      ],
-    },
-    threadId
-      ? {
-          configurable: {
-            thread_id: threadId,
+  const response = await runWithAgentContext(threadId ?? '', () =>
+    agent.invoke(
+      {
+        messages: [
+          {
+            role: 'user',
+            content: message,
           },
-        }
-      : undefined,
+        ],
+      },
+      threadId
+        ? {
+            configurable: {
+              thread_id: threadId,
+            },
+          }
+        : undefined,
+    ),
   );
 
   const lastMessage = response.messages.at(-1);
