@@ -3,6 +3,7 @@ import './LivechatPage.css'
 
 function LivechatPage() {
   const [message, setMessage] = useState('')
+  const [sessionId, setSessionId] = useState('')
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -15,7 +16,7 @@ function LivechatPage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message: content }),
+      body: JSON.stringify({ message: content, sessionId }),
     })
   }
 
@@ -24,6 +25,13 @@ function LivechatPage() {
       <form className="livechat-form" onSubmit={handleSubmit}>
         <input
           className="livechat-input"
+          value={sessionId}
+          placeholder="请输入 sessionId"
+          onChange={(event) => setSessionId(event.target.value)}
+        />
+        <textarea
+          className="livechat-input"
+          rows={4}
           value={message}
           placeholder="请输入消息"
           onChange={(event) => setMessage(event.target.value)}

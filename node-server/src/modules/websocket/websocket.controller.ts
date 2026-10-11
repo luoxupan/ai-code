@@ -11,7 +11,7 @@ export class WebsocketController {
   postMessage(@Body() postMessageDto: PostMessageDto) {
     return this.websocketService.postMessage(
       postMessageDto.message,
-      postMessageDto.wsClientId,
+      postMessageDto.sessionId,
     );
   }
 

@@ -45,6 +45,10 @@ export class WebsocketService implements OnModuleInit {
     return this.sessionIdsByClientId.get(wsClientId);
   }
 
+  getSessionClientId(sessionId: string): string | undefined {
+    return this.sessionConnections.get(sessionId)?.wsClientId;
+  }
+
   removeClient(clientId: string) {
     this.clients.delete(clientId);
     this.sessionIdsByClientId.delete(clientId);
@@ -59,39 +63,29 @@ export class WebsocketService implements OnModuleInit {
     return false;
   }
 
-  postMessage(message: string, wsClientId?: string) {
-    if (wsClientId) {
-      const client = this.clients.get(wsClientId);
-      if (!client) {
-        throw new NotFoundException(`WebSocket client ${wsClientId} not found`);
-      }
-      client.emit('Message', {
-        mid: uuidv4(),
-        subType: 0,
-        type: 5,
-        sender: 'system',
-        payload: {
-          content: message,
-        },
-      });
-      return {
-        deliveredCount: 1,
-      };
+  postMessage(message: string, sessionId: string) {
+    const wsClientId = this.getSessionClientId(sessionId);
+console.log('handleConnection:wsClientId', wsClientId)
+    if (!wsClientId) {
+      throw new NotFoundException(`WebSocket session ${sessionId} not found`);
     }
 
-    for (const client of this.clients.values()) {
-      client.emit('Message', {
-        mid: uuidv4(),
-        subType: 0,
-        type: 5,
-        sender: 'system',
-        payload: {
-          content: message,
-        },
-      });
+    const client = this.clients.get(wsClientId);
+    if (!client) {
+      throw new NotFoundException(`WebSocket client ${wsClientId} not found`);
     }
+
+    client.emit('Message', {
+      mid: uuidv4(),
+      subType: 0,
+      type: 5,
+      sender: 'system',
+      payload: {
+        content: message,
+      },
+    });
     return {
-      deliveredCount: this.clients.size,
+      deliveredCount: 1,
     };
   }
 

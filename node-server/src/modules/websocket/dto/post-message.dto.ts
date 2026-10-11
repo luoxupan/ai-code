@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class PostMessageDto {
   @IsString()
@@ -7,6 +7,5 @@ export class PostMessageDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
-  wsClientId?: string;
+  sessionId: string;
 }

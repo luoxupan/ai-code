@@ -1,14 +1,23 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
-    const authApiUrl = 'http://localhost:3001/auth';
+    const authApiUrl = this.configService.get<string>('AUTH_API_URL');
+    if (!authApiUrl) {
+      next();
+      return;
+    }
+
     try {
       // In a real scenario, you would probably pass some token from the request to the auth service.
       const { data } = await firstValueFrom(

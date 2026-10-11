@@ -46,6 +46,7 @@ export class WebsocketGateway
     const auth = client.handshake.auth as WebsocketAuth;
     this.logger.log(`Client connected: ${client.id}`, auth.session_id);
     this.websocketService.addClient(client);
+    console.log('handleConnection:', auth.session_id,client.id)
     this.websocketService.registerSessionConnection(
       auth.session_id,
       auth.user_id,

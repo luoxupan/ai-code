@@ -80,11 +80,11 @@ class SocketService {
   private createAuth() {
     const auth: Record<string, unknown> = {
       user_id: this.userId,
+      session_id: this.sessionId,
     };
 
     if (this.shouldConnectWithTemporaryAuth) {
       auth.iconnect = true;
-      auth.session_id = this.sessionId;
     }
 
     return auth;
