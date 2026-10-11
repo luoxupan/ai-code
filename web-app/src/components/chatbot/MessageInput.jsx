@@ -1,13 +1,14 @@
 import React from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { v4 as uuidv4 } from 'uuid';
-import { inputTextAtom, messagesAtom } from '../../store/chatbotAtoms.ts';
+import { inputTextAtom, messagesAtom, replyPendingAtom } from '../../store/chatbotAtoms.ts';
 import { MESSAGE_TYPE, SUB_TYPE } from '../../constants/chat.ts';
 import { sendChatMessage } from './sendChatMessage.js';
 
 const MessageInput = () => {
   const [text, setText] = useAtom(inputTextAtom);
   const setMessages = useSetAtom(messagesAtom);
+  const setReplyPending = useSetAtom(replyPendingAtom);
 
   const handleSend = async (event) => {
     event.preventDefault();
@@ -30,6 +31,7 @@ const MessageInput = () => {
     setText('');
 
     await sendChatMessage(newMessage, setMessages);
+    setReplyPending(true);
   };
 
   return (

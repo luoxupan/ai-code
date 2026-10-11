@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
-import { messagesAtom, socketStatusAtom } from '../store/chatbotAtoms.ts';
+import { messagesAtom, replyPendingAtom, socketStatusAtom } from '../store/chatbotAtoms.ts';
 import { socketService } from '../services/socketService.ts';
 import UserMessage from '../components/chatbot/UserMessage.jsx';
 import SystemMessage from '../components/chatbot/SystemMessage.jsx';
@@ -14,6 +14,7 @@ const CHAT_HISTORY_KEY = 'chatbot_history';
 const ChatbotPage = () => {
   const [messages, setMessages] = useAtom(messagesAtom);
   const [status, setStatus] = useAtom(socketStatusAtom);
+  const [replyPending, setReplyPending] = useAtom(replyPendingAtom);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -34,6 +35,7 @@ const ChatbotPage = () => {
     // Subscribe to service events
     const unsubscribeStatus = socketService.onStatusChange(setStatus);
     const unsubscribeMessage = socketService.onMessage((message) => {
+      setReplyPending(false);
       const newMessage = { ...message, sender: 'system' };
       setMessages((prev) => [...prev, newMessage]);
     });
@@ -48,12 +50,17 @@ const ChatbotPage = () => {
       unsubscribeMessage();
       socketService.disconnect();
     };
-  }, [setMessages, setStatus]);
+  }, [setMessages, setReplyPending, setStatus]);
 
   // Save history to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
   }, [messages]);
+
+  const handleRetry = async (message) => {
+    const isSent = await sendChatMessage(message, setMessages);
+    setReplyPending(isSent);
+  };
 
   return (
     <div className="chatbot-page">
@@ -84,12 +91,20 @@ const ChatbotPage = () => {
             <MessageContainer
               key={msg.mid || index}
               status={msg.status}
-              onRetry={() => sendChatMessage(msg, setMessages)}
+              onRetry={() => handleRetry(msg)}
             >
               <MessageRenderer message={msg} />
             </MessageContainer>
           );
         })}
+        {replyPending && (
+          <div className="reply-pending" role="status">
+            <span className="reply-pending__dot" aria-hidden="true" />
+            <span className="reply-pending__dot" aria-hidden="true" />
+            <span className="reply-pending__dot" aria-hidden="true" />
+            正在生成回复
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
       <MessageInput />

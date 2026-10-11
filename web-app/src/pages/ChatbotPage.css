@@ -210,6 +210,49 @@
   cursor: pointer;
 }
 
+.reply-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.05rem;
+  margin-bottom: 0.16rem;
+  padding: 0.12rem 0.15rem;
+  border: 0.01rem solid #e5e7eb;
+  border-bottom-left-radius: 0.05rem;
+  border-radius: 0.16rem;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 0.13rem;
+  box-shadow: 0 0.06rem 0.2rem rgba(15, 23, 42, 0.08);
+}
+
+.reply-pending__dot {
+  width: 0.05rem;
+  height: 0.05rem;
+  margin-right: 0.02rem;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: reply-pending-bounce 1s ease-in-out infinite;
+}
+
+.reply-pending__dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.reply-pending__dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes reply-pending-bounce {
+  0%, 100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-0.03rem);
+  }
+}
+
 .message-input-container {
   display: flex;
   gap: 0.1rem;

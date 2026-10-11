@@ -16,5 +16,8 @@ export const socketStatusAtom = atom('disconnected'); // 'connecting', 'connecte
  */
 export const messagesAtom = atom([]);
 
+// Whether a chat message has reached the backend but no reply has arrived yet
+export const replyPendingAtom = atom(false);
+
 // Atom for the input text in the message input bar
 export const inputTextAtom = atom('');
