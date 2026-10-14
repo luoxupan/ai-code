@@ -23,3 +23,18 @@ export const getSessionInfo = async (userId: string): Promise<SessionInfo> => {
 
   return response.json();
 };
+
+export const getAllSessionInfo = async (): Promise<SessionInfo[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/websocket/getAllSessionInfo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`获取所有会话信息失败: ${response.status}`);
+  }
+
+  return response.json();
+};

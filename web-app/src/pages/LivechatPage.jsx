@@ -1,9 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { getAllSessionInfo } from '../services/sessionService.ts'
 import './LivechatPage.css'
 
 function LivechatPage() {
   const [message, setMessage] = useState('')
   const [sessionId, setSessionId] = useState('')
+  const [sessions, setSessions] = useState([])
+
+  useEffect(() => {
+    getAllSessionInfo()
+      .then((data) => {
+        if (Array.isArray(data?.data)) {
+          setSessions(data?.data)
+        }
+      })
+      .catch((err) => {
+        console.error('获取会话列表失败:', err)
+      })
+  }, [])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -23,12 +37,17 @@ function LivechatPage() {
   return (
     <div className="livechat-page">
       <form className="livechat-form" onSubmit={handleSubmit}>
-        <input
+        <select
           className="livechat-session-input"
           value={sessionId}
-          placeholder="请输入 sessionId"
           onChange={(event) => setSessionId(event.target.value)}
-        />
+        >
+          {sessions.map((item) => (
+            <option key={item.session_id} value={item.session_id}>
+              {item.session_id}
+            </option>
+          ))}
+        </select>
         <textarea
           className="livechat-input"
           rows={4}
