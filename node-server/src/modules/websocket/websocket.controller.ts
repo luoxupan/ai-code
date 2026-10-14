@@ -19,4 +19,9 @@ export class WebsocketController {
   getSessionInfo(@Body() getSessionInfoDto: GetSessionInfoDto) {
     return this.websocketService.getSessionInfo(getSessionInfoDto.user_id);
   }
+
+  @Post('getAllSessionInfo')
+  getAllSessionInfo() {
+    return this.websocketService.getAllSessionInfo();
+  }
 }

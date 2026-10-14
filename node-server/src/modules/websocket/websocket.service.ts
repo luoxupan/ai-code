@@ -92,7 +92,7 @@ export class WebsocketService implements OnModuleInit {
 
   postMessage(message: string, sessionId: string) {
     const wsClientId = this.getSessionClientId(sessionId);
-console.log('handleConnection:wsClientId', wsClientId)
+
     if (!wsClientId) {
       throw new NotFoundException(`WebSocket session ${sessionId} not found`);
     }
@@ -167,5 +167,15 @@ console.log('handleConnection:wsClientId', wsClientId)
       session_id: uuidv4(),
       session_status: SessionStatus.Temporary,
     };
+  }
+
+  async getAllSessionInfo(): Promise<
+    Pick<Session, 'user_id' | 'session_id' | 'session_status'>[]
+  > {
+    return this.sessionRepository.find({
+      select: ['user_id', 'session_id', 'session_status'],
+      where: { session_status: SessionStatus.InProgress },
+      order: { timestamp: 'DESC' },
+    });
   }
 }
