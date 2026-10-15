@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.3.4",
+    "antd": "^6.6.6",
     "browserslist": "^4.28.2",
     "jotai": "^2.20.1",
     "jotai-immer": "^0.4.3",
