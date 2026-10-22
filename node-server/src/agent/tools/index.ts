@@ -3,7 +3,9 @@ import * as z from 'zod';
 import { getAgentContext } from '../context';
 
 type UserRecord = {
-  name: string;
+  name: string; // 中文名
+  name_en: string; // 英文名
+  user_id: number;
   email: string;
 };
 
@@ -34,7 +36,7 @@ export const getUser = tool(
     }
 
     const users = await userLoader();
-    return users.map((user) => `${user.name},${user.email}`).join('\n');
+    return users.map((user) => `${user.name},${user.name_en},${user.email},${user.user_id}`).join('\n');
   },
   {
     name: 'get_user',
@@ -67,7 +69,7 @@ export const disconnectWebsocket = tool(
   },
 );
 
-const getWeather = tool((input) => `都是大太阳 ${input.city}!`, {
+const getWeather = tool((input) => `天气是大太阳，温度20摄氏度，有微风 ${input.city}!`, {
   name: 'get_weather',
   description: 'Get the weather for a given city',
   schema: z.object({

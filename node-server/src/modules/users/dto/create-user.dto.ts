@@ -5,6 +5,10 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
+  @IsString()
+  @IsNotEmpty()
+  name_en: string;
+
   @IsNumber()
   @IsNotEmpty()
   user_id: number;
