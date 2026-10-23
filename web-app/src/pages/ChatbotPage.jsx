@@ -10,6 +10,7 @@ import SystemMessage from '../components/chatbot/SystemMessage.jsx';
 import MessageRenderer from '../components/chatbot/MessageRenderer.jsx';
 import MessageInput from '../components/chatbot/MessageInput.jsx';
 import { sendChatMessage } from '../components/chatbot/sendChatMessage.js';
+import { MESSAGE_TYPE } from '../constants/chat.ts';
 import './ChatbotPage.css';
 
 const CHAT_HISTORY_KEY = 'chatbot_history';
@@ -83,6 +84,8 @@ const ChatbotPage = () => {
     setReplyPending(isSent);
   };
 
+  // messages = (messages || []).filter((message) => ![MESSAGE_TYPE.ACK, MESSAGE_TYPE.ACTION].includes(message.type));
+
   return (
     <div className="chatbot-page">
       <div className="header">
@@ -108,6 +111,13 @@ const ChatbotPage = () => {
         )}
         {messages.map((msg, index) => {
           const MessageContainer = msg.sender === 'user' ? UserMessage : SystemMessage;
+          if (msg.type === MESSAGE_TYPE.ACK) {
+            return null;
+          }
+        
+          if (msg.type === MESSAGE_TYPE.ACTION) {
+            return null;
+          }
           return (
             <MessageContainer
               key={msg.mid || index}

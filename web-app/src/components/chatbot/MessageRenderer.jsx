@@ -9,10 +9,14 @@ const MessageRenderer = ({ message }) => {
     return null;
   }
 
+  if (message.type === MESSAGE_TYPE.ACTION) {
+    return null;
+  }
+
   // Destructure with a default value for payload to be safe
   const { type, subType, payload = {} } = message;
 
-  if (typeof payload.content === 'undefined') {
+  if (!payload.content) {
     // If there's no content, don't render anything for this message.
     // This handles system messages (e.g., type 1, 2) that might not have a displayable payload.
     return null;

@@ -13,6 +13,17 @@ type UserLoader = () => Promise<UserRecord[]>;
 
 type DisconnectHandler = (wsClientId: string) => Promise<boolean> | boolean;
 
+type MailCardContent = {
+  recipients?: string;
+  subject?: string;
+  body?: string;
+};
+
+type MailCardHandler = (
+  wsClientId: string,
+  content: string,
+) => Promise<boolean> | boolean;
+
 let disconnectHandler: DisconnectHandler | undefined;
 
 /** Configure the WebSocket disconnect handler used by the disconnect tool. */
@@ -20,6 +31,13 @@ export const configureDisconnectHandler = (
   handler: DisconnectHandler,
 ): void => {
   disconnectHandler = handler;
+};
+
+let mailCardHandler: MailCardHandler | undefined;
+
+/** Configure the WebSocket handler used by the mail card tool. */
+export const configureMailCardHandler = (handler: MailCardHandler): void => {
+  mailCardHandler = handler;
 };
 
 let userLoader: UserLoader | undefined;
@@ -36,7 +54,11 @@ export const getUser = tool(
     }
 
     const users = await userLoader();
-    return users.map((user) => `${user.name},${user.name_en},${user.email},${user.user_id}`).join('\n');
+    return users
+      .map(
+        (user) => `${user.name},${user.name_en},${user.email},${user.user_id}`,
+      )
+      .join('\n');
   },
   {
     name: 'get_user',
@@ -69,13 +91,57 @@ export const disconnectWebsocket = tool(
   },
 );
 
-const getWeather = tool((input) => `天气是大太阳，温度20摄氏度，有微风 ${input.city}!`, {
-  name: 'get_weather',
-  description: 'Get the weather for a given city',
-  schema: z.object({
-    city: z.string().describe('The city to get the weather for'),
-  }),
-});
+export const sendMailCard = tool(
+  async (input) => {
+    const wsClientId = getAgentContext()?.wsClientId;
+
+    if (!wsClientId) {
+      throw new Error('WebSocket client context is not available');
+    }
+
+    if (!mailCardHandler) {
+      throw new Error('WebSocket mail card handler has not been configured');
+    }
+
+    const mailCardContent: MailCardContent = {
+      ...(input.recipients ? { recipients: input.recipients } : {}),
+      ...(input.subject ? { subject: input.subject } : {}),
+      ...(input.body ? { body: input.body } : {}),
+    };
+    const delivered = await mailCardHandler(
+      wsClientId,
+      JSON.stringify(mailCardContent),
+    );
+
+    return delivered
+      ? '已推送发送邮件卡片'
+      : 'WebSocket 客户端不存在，发送邮件卡片推送失败';
+  },
+  {
+    name: 'send_mail_card',
+    description:
+      '当用户表示想要发送邮件时，推送发送邮件卡片；可传入已知的收件人、主题和内容作为预填信息',
+    schema: z.object({
+      recipients: z
+        .string()
+        .optional()
+        .describe('收件人邮箱地址，多个邮箱用英文逗号分隔'),
+      subject: z.string().optional().describe('邮件主题'),
+      body: z.string().optional().describe('邮件内容'),
+    }),
+  },
+);
+
+const getWeather = tool(
+  (input) => `天气是大太阳，温度20摄氏度，有微风 ${input.city}!`,
+  {
+    name: 'get_weather',
+    description: 'Get the weather for a given city',
+    schema: z.object({
+      city: z.string().describe('The city to get the weather for'),
+    }),
+  },
+);
 
 const count = tool(
   (input) => {
@@ -110,6 +176,7 @@ const file_save = tool(
 export const tools = [
   getUser,
   disconnectWebsocket,
+  sendMailCard,
   getWeather,
   file_save,
   count,

@@ -9,7 +9,10 @@ import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { Repository } from 'typeorm';
 import { deleteAgentMemory } from '../../agent';
-import { configureDisconnectHandler } from '../../agent/tools';
+import {
+  configureDisconnectHandler,
+  configureMailCardHandler,
+} from '../../agent/tools';
 import { Session, SessionStatus } from './entities/session.entity';
 
 type SessionConnection = {
@@ -32,6 +35,9 @@ export class WebsocketService implements OnModuleInit {
   onModuleInit() {
     configureDisconnectHandler((wsClientId) =>
       this.disconnectClient(wsClientId),
+    );
+    configureMailCardHandler((wsClientId, content) =>
+      this.sendMailCardToClient(wsClientId, content),
     );
   }
 
@@ -88,6 +94,25 @@ export class WebsocketService implements OnModuleInit {
       return true;
     }
     return false;
+  }
+
+  sendMailCardToClient(clientId: string, content: string) {
+    const client = this.clients.get(clientId);
+
+    if (!client) {
+      return false;
+    }
+
+    client.emit('Message', {
+      mid: uuidv4(),
+      subType: 4,
+      type: 5,
+      sender: 'system',
+      payload: {
+        content,
+      },
+    });
+    return true;
   }
 
   postMessage(message: string, sessionId: string) {

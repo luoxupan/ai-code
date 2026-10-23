@@ -41,6 +41,9 @@ const hasMarkdownSyntax = (value) => {
 };
 
 const Text = ({ content }) => {
+  if (typeof content !== 'string') {
+    return JSON.stringify(content);
+  }
   if (!hasMarkdownSyntax(content)) {
     return <div className="markdown-plain">{content}</div>;
   }
