@@ -5,6 +5,9 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .livechat-form {
@@ -12,9 +15,14 @@
   flex-direction: column;
   gap: 0.2rem;
   width: 100%;
+  min-width: 0;
+  max-width: min(100%, 720px);
 }
 
 .livechat-session-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   height: 0.3rem;
   padding: 0 0.16rem;
   line-height: normal;
@@ -25,6 +33,9 @@
 }
 
 .livechat-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   flex: 1;
   height: 0.6rem;
   padding: 0 0.16rem;
@@ -41,6 +52,9 @@ textarea.livechat-input {
 }
 
 .livechat-send {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   height: 0.6rem;
   padding: 0 0.24rem;
   border: none;
