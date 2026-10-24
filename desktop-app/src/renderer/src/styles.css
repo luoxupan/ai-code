@@ -96,6 +96,21 @@ body {
   background: #d8d8d6;
 }
 
+.page-host {
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.page-viewport {
+  height: 100%;
+  min-width: 0;
+}
+
+.page-viewport[hidden] {
+  display: none;
+}
+
 .app-layout.resizing {
   cursor: col-resize;
   user-select: none;

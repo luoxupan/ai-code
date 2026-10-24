@@ -70,7 +70,6 @@ const ChatbotPage = () => {
     return () => {
       unsubscribeStatus();
       unsubscribeMessage();
-      socketService.disconnect();
     };
   }, [setMessages, setReplyPending, setStatus, userId]);
 

@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import ChatbotPage from './pages/ChatbotPage.jsx'
 import LivechatPage from './pages/LivechatPage.jsx'
@@ -8,8 +8,12 @@ const SIDEBAR_MAX_WIDTH = 420
 const SIDEBAR_DEFAULT_WIDTH = 220
 
 function App() {
+  const { pathname } = useLocation()
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH)
   const [isResizing, setIsResizing] = useState(false)
+
+  const isChatbotActive = pathname === '/chatbot'
+  const isLivechatActive = pathname === '/livechat'
 
   const clampSidebarWidth = (width: number) => (
     Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, width))
@@ -71,19 +75,20 @@ function App() {
         onKeyDown={handleResizeKeyDown}
       />
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <main className="content">
-              <h1>首页</h1>
-              <p>请从左侧选择 Chatbot 或 LiveChat。</p>
-            </main>
-          }
-        />
-        <Route path="/chatbot" element={<ChatbotPage />} />
-        <Route path="/livechat" element={<LivechatPage />} />
-      </Routes>
+      <div className="page-host">
+        <div className="page-viewport" hidden={!isChatbotActive}>
+          <ChatbotPage />
+        </div>
+
+        <div className="page-viewport" hidden={!isLivechatActive}>
+          <LivechatPage />
+        </div>
+
+        <main className="content" hidden={isChatbotActive || isLivechatActive}>
+          <h1>首页</h1>
+          <p>请从左侧选择 Chatbot 或 LiveChat。</p>
+        </main>
+      </div>
     </div>
   )
 }
