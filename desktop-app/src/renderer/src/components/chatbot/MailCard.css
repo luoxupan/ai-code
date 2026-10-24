@@ -1,0 +1,125 @@
+.mail-card {
+  width: 35vw;
+  max-width: 6.9rem;
+  /* padding: 0.26rem 0.24rem 0.3rem; */
+  /* border: 0.01rem solid #e5e7eb; */
+  border-radius: 0.12rem;
+  background: #fff;
+  /* box-shadow: 0 0.04rem 0.16rem rgba(15, 23, 42, 0.08); */
+  color: #111827;
+}
+
+.mail-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+  margin-bottom: 0.28rem;
+}
+
+.mail-card__icon {
+  width: 0.3rem;
+  height: 0.3rem;
+  fill: #2563eb;
+}
+
+.mail-card__header h2 {
+  margin: 0;
+  font-size: 0.24rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mail-card__form {
+  display: grid;
+  gap: 0.24rem;
+}
+
+.mail-card__field {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.mail-card__field span {
+  font-size: 0.16rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.mail-card__field i {
+  color: #ef4444;
+  font-style: normal;
+}
+
+.mail-card__field input,
+.mail-card__field textarea {
+  width: 100%;
+  min-height: 0.42rem;
+  padding: 0.1rem 0.14rem;
+  border: 0.01rem solid #e5e7eb;
+  border-radius: 0.08rem;
+  outline: none;
+  color: #111827;
+  font-size: 0.16rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.mail-card__field textarea {
+  min-height: 1.7rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.mail-card__field input::placeholder,
+.mail-card__field textarea::placeholder {
+  color: #9ca3af;
+}
+
+.mail-card__field input:focus,
+.mail-card__field textarea:focus {
+  border-color: #2563eb;
+}
+
+.mail-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+}
+
+.mail-card__actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.07rem;
+  min-width: 0.94rem;
+  min-height: 0.38rem;
+  padding: 0 0.18rem;
+  border: 0;
+  border-radius: 0.08rem;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.16rem;
+  cursor: pointer;
+}
+
+.mail-card__actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.mail-card__actions svg {
+  width: 0.16rem;
+  height: 0.16rem;
+  fill: currentColor;
+}
+
+.mail-card__status {
+  font-size: 0.13rem;
+}
+
+.mail-card__status.is-success {
+  color: #16a34a;
+}
+
+.mail-card__status.is-failed {
+  color: #ef4444;
+}

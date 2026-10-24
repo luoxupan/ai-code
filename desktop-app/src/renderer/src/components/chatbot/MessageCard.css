@@ -1,0 +1,166 @@
+.message-card {
+  position: relative;
+  min-width: 4rem;
+  max-width: 100%;
+  overflow: hidden;
+  border: 0.01rem solid #d8e3e0;
+  border-radius: 0.18rem;
+  background:
+    linear-gradient(145deg, rgba(0, 255, 170, 0.09), rgba(0, 212, 255, 0.05) 45%, #ffffff),
+    #ffffff;
+  box-shadow: 0 0.06rem 0.22rem rgba(15, 23, 42, 0.09);
+}
+
+.message-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.025) 0.01rem, transparent 0.01rem);
+  background-size: 100% 0.18rem;
+}
+
+.message-card__header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.08rem;
+  padding: 0.12rem 0.16rem;
+  border-bottom: 0.01rem solid #e5f2ef;
+  background: rgba(0, 255, 170, 0.06);
+}
+
+.message-card__icon {
+  display: grid;
+  place-items: center;
+  width: 0.26rem;
+  height: 0.26rem;
+  border: 0.01rem solid rgba(0, 191, 129, 0.24);
+  border-radius: 0.08rem;
+  background: rgba(0, 255, 170, 0.08);
+  color: #078f68;
+  font-size: 0.13rem;
+}
+
+.message-card__label {
+  color: #078f68;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.12rem;
+  font-weight: 700;
+  letter-spacing: 0.02rem;
+  text-transform: uppercase;
+}
+
+.message-card__line {
+  flex: 1;
+  height: 0.01rem;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.55), transparent);
+}
+
+.message-card__body {
+  position: relative;
+  z-index: 1;
+  padding: 0.14rem 0.16rem;
+  color: #1f2937;
+}
+
+.message-card__footer {
+  position: relative;
+  z-index: 1;
+  padding: 0.1rem 0.16rem;
+  border-top: 0.01rem solid #e5e7eb;
+  color: #6b7280;
+  font-size: 0.1rem;
+}
+
+.guess-list {
+  display: grid;
+  gap: 0.07rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guess-item {
+  padding: 0.08rem 0.1rem;
+  border: 0.01rem solid rgba(7, 139, 171, 0.2);
+  border-radius: 0.1rem;
+  background: rgba(0, 212, 255, 0.06);
+  color: #1f2937;
+  font-size: 0.12rem;
+}
+
+.faq-question {
+  margin: 0 0 0.08rem;
+  color: #078f68;
+  font-size: 0.14rem;
+  line-height: 1.4;
+}
+
+.faq-answer {
+  margin: 0;
+  color: #1f2937;
+  font-size: 0.12rem;
+  line-height: 1.65;
+}
+
+.order-amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.12rem;
+  margin-bottom: 0.12rem;
+}
+
+.order-amount span {
+  color: #6b7280;
+  font-size: 0.1rem;
+}
+
+.order-amount strong {
+  color: #078f68;
+  font-size: 0.2rem;
+}
+
+.order-fields {
+  display: grid;
+  gap: 0.07rem;
+  margin: 0;
+}
+
+.order-fields > div {
+  display: grid;
+  grid-template-columns: 0.55rem 1fr;
+  gap: 0.08rem;
+  align-items: center;
+  padding: 0.07rem 0;
+  border-top: 0.01rem solid #e5e7eb;
+}
+
+.order-fields dt,
+.order-fields dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.order-fields dt {
+  color: #6b7280;
+  font-size: 0.1rem;
+}
+
+.order-fields dd {
+  color: #1f2937;
+  font-size: 0.11rem;
+}
+
+.order-status {
+  display: inline-block;
+  padding: 0.02rem 0.07rem;
+  border: 0.01rem solid rgba(7, 139, 171, 0.24);
+  border-radius: 0.12rem;
+  background: rgba(0, 212, 255, 0.08);
+  color: #078bab;
+  font-size: 0.1rem;
+}
