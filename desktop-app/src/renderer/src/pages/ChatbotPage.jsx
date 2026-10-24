@@ -33,6 +33,8 @@ const ChatbotPage = () => {
   }, [messages]);
 
   useEffect(() => {
+    if (!userId) return;
+
     // Load history from localStorage
     const savedHistory = localStorage.getItem(CHAT_HISTORY_KEY);
     if (savedHistory) {
@@ -41,6 +43,7 @@ const ChatbotPage = () => {
 
     // Subscribe to service events
     const unsubscribeStatus = socketService.onStatusChange(setStatus);
+    socketService.getStatus().then(setStatus);
     const unsubscribeMessage = socketService.onMessage((message) => {
       setReplyPending(false);
       const newMessage = { ...message, sender: 'system' };
@@ -51,7 +54,7 @@ const ChatbotPage = () => {
       const sessionInfo = (await getSessionInfo(userId))?.data;
       if (!sessionInfo) return;
 
-      socketService.setSessionInfo(userId, sessionInfo.session_id, sessionInfo.session_status);
+      await socketService.setSessionInfo(userId, sessionInfo.session_id, sessionInfo.session_status);
       if (sessionInfo.session_status === SESSION_STATUS.IN_PROGRESS) {
         await socketService.connect();
       }
@@ -70,7 +73,6 @@ const ChatbotPage = () => {
     return () => {
       unsubscribeStatus();
       unsubscribeMessage();
-      // socketService.disconnect();
     };
   }, [setMessages, setReplyPending, setStatus, userId]);
 

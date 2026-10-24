@@ -12,6 +12,10 @@
   --glow-primary: 0 0 0.2rem rgba(0, 255, 170, 0.3);
 }
 
+h1,p {
+  font-size: 0.4rem;
+}
+
 html,
 body {
   height: 100%;
