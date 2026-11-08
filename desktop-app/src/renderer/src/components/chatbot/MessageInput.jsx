@@ -57,8 +57,8 @@ const MessageInput = () => {
     setMessages(prev => [...prev, newMessage]);
     setText('');
 
-    await sendChatMessage(newMessage, setMessages);
-    setReplyPending(true);
+    const isSent = await sendChatMessage(newMessage, setMessages);
+    setReplyPending(isSent);
   };
 
   return (
