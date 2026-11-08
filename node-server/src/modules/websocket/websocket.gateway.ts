@@ -150,7 +150,8 @@ export class WebsocketGateway
         ...data,
         payload: {
           ...data?.payload,
-          content: typeof content === 'string' ? content : JSON.stringify(content),
+          content:
+            typeof content === 'string' ? content : JSON.stringify(content),
         },
         subType: 0,
         type: 5,

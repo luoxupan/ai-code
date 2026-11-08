@@ -1,8 +1,7 @@
-
 import { Controller, Get, Post, Body, Query, Redirect } from '@nestjs/common';
 import { TestService } from './test.service';
 import { WebsocketService } from '../websocket/websocket.service';
- 
+
 @Controller('test')
 export class TestController {
   constructor(
@@ -30,4 +29,3 @@ export class TestController {
     }
   }
 }
- 

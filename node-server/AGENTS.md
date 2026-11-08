@@ -92,6 +92,9 @@ test/                             # e2e 用例与 jest-e2e.json
 | `DB_HOST` / `DB_PORT` / `DB_USERNAME` / `DB_PASSWORD` | MySQL 连接 | `localhost` / `3306` / `root` / 空 |
 | `DB_DATABASE` | 库名（测试为 `:memory:`） | `nest_db` |
 | `DB_SYNCHRONIZE` | 是否自动同步表结构 | `false` |
+| `DB_CONNECTION_LIMIT` | MySQL 连接池最大连接数，仅 MySQL 生效 | `10` |
+| `DB_MAX_IDLE` | MySQL 连接池最大空闲连接数，仅 MySQL 生效 | `10` |
+| `DB_IDLE_TIMEOUT` | MySQL 空闲连接超时时间，单位毫秒 | `60000` |
 
 `.env.development`、`.env.pre`、`.env.production`、`.env.test` 目前都**已提交到仓库**（`.gitignore` 只忽略 `.env`、`.env.*.local`、`.env.sample`）。往这些文件里加敏感信息前先确认是否真的要入库。
 

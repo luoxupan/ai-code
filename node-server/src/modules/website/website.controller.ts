@@ -7,7 +7,11 @@ export class WebsiteController {
   constructor(private readonly websiteService: WebsiteService) {}
 
   @Get('*path')
-  getPage(@Param('path') path: string, @Req() req: Request, @Res() res: Response): void {
+  getPage(
+    @Param('path') path: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): void {
     const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
     const html = this.websiteService.getPage(fullUrl);
     res.type('text/html').send(html);

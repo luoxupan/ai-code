@@ -22,6 +22,8 @@ export interface Config {
 }
 
 export default registerAs('config', (): Config => {
+  const isMysql = process.env.DB_TYPE !== 'sqlite';
+
   return {
     app: {
       port: parseInt(process.env.PORT || '3000', 10),
@@ -36,6 +38,20 @@ export default registerAs('config', (): Config => {
       database: process.env.DB_DATABASE || 'nest_db',
       synchronize: process.env.DB_SYNCHRONIZE === 'true',
       autoLoadEntities: true,
+      ...(isMysql
+        ? {
+            extra: {
+              connectionLimit: parseInt(
+                process.env.DB_CONNECTION_LIMIT || '10',
+                10,
+              ),
+              maxIdle: parseInt(process.env.DB_MAX_IDLE || '10', 10),
+              idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '60000', 10),
+              queueLimit: 0,
+              waitForConnections: true,
+            },
+          }
+        : {}),
     },
     mail: {
       host: process.env.SMTP_HOST || '',

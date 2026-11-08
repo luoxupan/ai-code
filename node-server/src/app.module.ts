@@ -39,9 +39,6 @@ import { AgentModule } from './modules/agent/agent.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .exclude('website/*path')
-      .forRoutes('*');
+    consumer.apply(AuthMiddleware).exclude('website/*path').forRoutes('*');
   }
 }
