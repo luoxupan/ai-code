@@ -54,9 +54,32 @@ class DeepSeekChatModel extends BaseChatModel {
     });
   }
 
+  /**
+   * LangChain 的消息内容可能是 string，也可能是 [{ type: 'text', text }] 内容块数组。
+   * GLM 的 OpenAI 兼容接口只接受字符串，这里统一拍平成文本，否则系统提示会变成 [object Object]。
+   */
+  private contentToText(content: BaseMessage['content']): string {
+    if (typeof content === 'string') {
+      return content;
+    }
+    if (Array.isArray(content)) {
+      return content
+        .map((part) => {
+          if (typeof part === 'string') {
+            return part;
+          }
+          const record = part as Record<string, unknown>;
+          return typeof record.text === 'string'
+            ? record.text
+            : JSON.stringify(part);
+        })
+        .join('');
+    }
+    return JSON.stringify(content);
+  }
+
   private toApiMessage(message: BaseMessage): Record<string, unknown> {
-    const content =
-      typeof message.content === 'string' ? message.content : message.content;
+    const content = this.contentToText(message.content);
     const result: Record<string, unknown> = {
       role:
         message.type === 'human'
@@ -156,6 +179,14 @@ class DeepSeekChatModel extends BaseChatModel {
   }
 }
 
+const SYSTEM_PROMPT = `你是企业在线客服助手，用简洁的中文回答用户问题。
+
+规则：
+1. 用户询问产品功能、使用方法、账号、订单、邮件、退款、采购、客服时间等任何业务相关问题时，必须先调用 search_faq 工具检索 FAQ 知识库，再根据检索结果回答，不要凭空猜测。
+2. search_faq 命中后，系统会自动向用户推送 FAQ 卡片。你只需做简短补充、确认或引导追问，不要整段复述卡片里的问题和答案。
+3. search_faq 没有命中时，可以基于通用常识回答，但要说明这是通用建议，并引导用户联系人工客服。
+4. 与业务无关的问题（闲聊、写作、天气等）不要调用 search_faq，直接回答。`;
+
 const createConfiguredAgent = () => {
   const handleToolErrors = createMiddleware({
     name: 'HandleToolErrors',
@@ -178,6 +209,7 @@ const createConfiguredAgent = () => {
     tools: tools,
     middleware: [handleToolErrors],
     checkpointer,
+    systemPrompt: SYSTEM_PROMPT,
   });
 };
 

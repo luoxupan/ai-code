@@ -15,10 +15,22 @@ export interface MailConfig {
   from: string;
 }
 
+export interface RagConfig {
+  qdrantUrl: string;
+  qdrantApiKey: string;
+  qdrantCollection: string;
+  ollamaBaseUrl: string;
+  embeddingModel: string;
+  embeddingDimensions: number;
+  topK: number;
+  scoreThreshold: number;
+}
+
 export interface Config {
   app: AppConfig;
   database: TypeOrmModuleOptions;
   mail: MailConfig;
+  rag: RagConfig;
 }
 
 export default registerAs('config', (): Config => {
@@ -60,6 +72,19 @@ export default registerAs('config', (): Config => {
       user: process.env.SMTP_USER || '',
       password: process.env.SMTP_PASSWORD || '',
       from: process.env.MAIL_FROM || '',
+    },
+    rag: {
+      qdrantUrl: process.env.QDRANT_URL || 'http://localhost:6333',
+      qdrantApiKey: process.env.QDRANT_API_KEY || '',
+      qdrantCollection: process.env.QDRANT_COLLECTION || 'faq',
+      ollamaBaseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+      embeddingModel: process.env.OLLAMA_EMBEDDING_MODEL || 'bge-m3',
+      embeddingDimensions: parseInt(
+        process.env.OLLAMA_EMBEDDING_DIMENSIONS || '1024',
+        10,
+      ),
+      topK: parseInt(process.env.RAG_TOP_K || '3', 10),
+      scoreThreshold: parseFloat(process.env.RAG_SCORE_THRESHOLD || '0.75'),
     },
   };
 });

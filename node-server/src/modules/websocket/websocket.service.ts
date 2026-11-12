@@ -115,6 +115,29 @@ export class WebsocketService implements OnModuleInit {
     return true;
   }
 
+  /**
+   * 推送 FAQ 卡片（subType=2），content 为 { question, answer } 的 JSON 字符串，
+   * 与前端 FaqCard 的解析结构保持一致。
+   */
+  sendFaqCardToClient(clientId: string, question: string, answer: string) {
+    const client = this.clients.get(clientId);
+
+    if (!client) {
+      return false;
+    }
+
+    client.emit('Message', {
+      mid: uuidv4(),
+      subType: 2,
+      type: 5,
+      sender: 'system',
+      payload: {
+        content: JSON.stringify({ question, answer }),
+      },
+    });
+    return true;
+  }
+
   postMessage(message: string, sessionId: string) {
     const wsClientId = this.getSessionClientId(sessionId);
 

@@ -32,7 +32,21 @@ npm run pm2:start           # 生产
 npm run pm2:pre             # 预发
 npm run pm2:restart / pm2:stop / pm2:delete
 npm run pm2:logs / pm2:monit
+
+npm run seed:faq            # 写入示例 FAQ 并重建向量索引（需 MySQL + Qdrant + Ollama）
 ```
+
+### RAG 外部依赖（本机手工部署）
+
+```bash
+brew install qdrant                               # 或 brew tap qdrant/qdrant && brew install qdrant
+qdrant                                            # 监听 6333
+brew install ollama                               # 或官方 App
+ollama serve                                      # 监听 11434
+ollama pull bge-m3                                # 1024 维，与 OLLAMA_EMBEDDING_DIMENSIONS 对应
+```
+
+两者都不可用时服务仍能启动：`QdrantService` / `EmbeddingService` 只在启动时打 warn，`search_faq` 工具会报错，其他对话与工具不受影响。FAQ 写入时索引失败只会把 `index_status` 置为 `pending`，可用 `POST /api/v1/faq/reindex` 修复。
 
 本地联调 websocket：先 `npm run start:dev`，再 `node socket-test-client.js`。
 
@@ -60,7 +74,11 @@ src/
     <name>.service.ts
     dto/*.dto.ts
     entities/*.entity.ts
+  modules/faq/                    # FAQ RAG：实体/DTO + Qdrant/Embedding 封装，
+                                  # search_faq 工具通过 configureFaqSearchHandler 注入
+  scripts/seed-faq.ts             # npm run seed:faq 的入口
   agent/index.ts                  # 独立脚本，非 Nest 代码
+sql/faq.sql                       # FAQ 表 DDL（开发/预发/生产手工执行）
 test/                             # e2e 用例与 jest-e2e.json
 ```
 
@@ -74,12 +92,15 @@ test/                             # e2e 用例与 jest-e2e.json
 - **`AuthMiddleware` 已全局挂载**：作用于 `*`，仅排除 `website/*path`。它向 `http://localhost:3001/auth` 发请求校验，失败与异常分支目前都直接 `next()` 放行（鉴权尚未真正接入）。新增公开接口时要么加入 `exclude`，要么注意它会引入一次外部 HTTP 调用。
 - **`ClassSerializerInterceptor` 已全局启用**：实体上可用 `@Exclude()` 等 class-transformer 装饰器控制输出。
 - **WebSocket**：`WebsocketGateway` 事件名 `Message`，`pingInterval: 5000`、`pingTimeout: 10000`、`cors.origin: '*'`；`WebsocketService` 维护 `clientId -> Socket` 映射并已从 `WebsocketModule` 导出，需要主动推送时注入该 Service（`TestController` 是现成示例）。
-- **WebSocket 消息协议**：`{ type, subType, mid, payload: { content } }`；`type` 1=连接、2=断开、3=ack、5=聊天消息，`type=5` 时前端按 `subType` 渲染（1 猜你想问、2 faq、3 订单）。完整说明见 `socket-test-client.js` 末尾注释。
+- **WebSocket 消息协议**：`{ type, subType, mid, payload: { content } }`；`type` 1=连接、2=断开、3=ack、5=聊天消息，`type=5` 时前端按 `subType` 渲染（1 猜你想问、2 faq、3 订单、4 邮件卡片）。完整说明见 `socket-test-client.js` 末尾注释。
+- **FAQ 卡片内容格式**：`subType=2` 的 `payload.content` 是 `{"question":"...","answer":"..."}` 的 JSON 字符串，由 `WebsocketService.sendFaqCardToClient` 生成，前端 `FaqCard` 直接解析。
+- **Agent 的系统提示**：`src/agent/index.ts` 的 `createAgent({ systemPrompt })` 会把提示包装成 `SystemMessage`，其 `content` 是 `[{ type: 'text', text }]` 内容块数组；GLM 的 OpenAI 兼容接口只接受字符串，`toApiMessage` 里已用 `contentToText` 拍平。新增消息类型或换模型时注意别再把数组原样透传，否则系统提示会变成 `[object Object]`。
 
 ## 5. 数据库
 
 - 实体放 `entities/*.entity.ts`，在所属模块用 `TypeOrmModule.forFeature([...])` 注册；根配置开了 `autoLoadEntities: true`，无需再维护实体清单。
 - `synchronize` 由 `DB_SYNCHRONIZE` 决定，仅 `.env.test` 为 `true`。仓库暂无迁移目录，schema 变更目前靠这个开关同步，**改生产/预发库前先人工确认**，不要把 `DB_SYNCHRONIZE=true` 带进非测试环境。
+- 新增的 `faq` 表不走同步开关：开发/预发/生产需手工执行 `sql/faq.sql`（幂等 `CREATE TABLE IF NOT EXISTS`），测试库由 sqlite `synchronize` 自动建表。
 - 修改实体字段时，同步检查 DTO 校验、e2e 断言，以及依赖该字段的前端（`../web-app`）。
 
 ## 6. 环境变量
@@ -95,6 +116,14 @@ test/                             # e2e 用例与 jest-e2e.json
 | `DB_CONNECTION_LIMIT` | MySQL 连接池最大连接数，仅 MySQL 生效 | `10` |
 | `DB_MAX_IDLE` | MySQL 连接池最大空闲连接数，仅 MySQL 生效 | `10` |
 | `DB_IDLE_TIMEOUT` | MySQL 空闲连接超时时间，单位毫秒 | `60000` |
+| `QDRANT_URL` | Qdrant HTTP 地址 | `http://localhost:6333` |
+| `QDRANT_API_KEY` | Qdrant API Key，本地部署留空 | 空 |
+| `QDRANT_COLLECTION` | FAQ 向量集合名 | `faq` |
+| `OLLAMA_BASE_URL` | Ollama 地址 | `http://localhost:11434` |
+| `OLLAMA_EMBEDDING_MODEL` | embedding 模型 | `bge-m3` |
+| `OLLAMA_EMBEDDING_DIMENSIONS` | 向量维度，必须与模型一致（bge-m3 为 1024） | `1024` |
+| `RAG_TOP_K` | 检索召回条数 | `3` |
+| `RAG_SCORE_THRESHOLD` | cosine 相似度阈值，低于该值视为未命中 | `0.75` |
 
 `.env.development`、`.env.pre`、`.env.production`、`.env.test` 目前都**已提交到仓库**（`.gitignore` 只忽略 `.env`、`.env.*.local`、`.env.sample`）。往这些文件里加敏感信息前先确认是否真的要入库。
 

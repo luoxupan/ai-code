@@ -40,6 +40,24 @@ export const configureMailCardHandler = (handler: MailCardHandler): void => {
   mailCardHandler = handler;
 };
 
+type FaqSearchHit = {
+  id: number;
+  question: string;
+  answer: string;
+  score: number;
+};
+
+type FaqSearchHandler = (
+  query: string,
+) => Promise<{ hits: FaqSearchHit[]; cardPushed: boolean }>;
+
+let faqSearchHandler: FaqSearchHandler | undefined;
+
+/** Configure the FAQ retrieval handler used by the search_faq tool. */
+export const configureFaqSearchHandler = (handler: FaqSearchHandler): void => {
+  faqSearchHandler = handler;
+};
+
 let userLoader: UserLoader | undefined;
 
 /** Configure the database-backed user loader used by the get_user tool. */
@@ -173,7 +191,46 @@ const file_save = tool(
   },
 );
 
+export const searchFaq = tool(
+  async (input) => {
+    if (!faqSearchHandler) {
+      throw new Error('FAQ search handler has not been configured');
+    }
+
+    const { hits, cardPushed } = await faqSearchHandler(input.query);
+
+    if (!hits.length) {
+      return '未检索到相关 FAQ，请基于已有信息回答或引导用户换一种问法。';
+    }
+
+    const details = hits
+      .map(
+        (hit, index) =>
+          `${index + 1}. 问题：${hit.question}\n   答案：${hit.answer}`,
+      )
+      .join('\n');
+
+    return [
+      cardPushed
+        ? '已向用户推送 FAQ 卡片，用户可以直接看到上述问答，请不要再重复卡片内容。'
+        : 'FAQ 卡片推送失败（当前会话没有可用的 WebSocket 客户端），请把答案直接告诉用户。',
+      `检索到的 FAQ：\n${details}`,
+    ].join('\n\n');
+  },
+  {
+    name: 'search_faq',
+    description:
+      '查询产品 FAQ/常见问题知识库。当用户询问产品功能、使用方法、账号、订单、邮件或客服等常见问题时，先用该工具检索。',
+    schema: z.object({
+      query: z
+        .string()
+        .describe('用户问题的检索语句，尽量保留用户原话中的关键信息'),
+    }),
+  },
+);
+
 export const tools = [
+  searchFaq,
   getUser,
   disconnectWebsocket,
   sendMailCard,

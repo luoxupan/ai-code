@@ -9,6 +9,7 @@ import { HttpModule } from '@nestjs/axios';
 import { WebsocketModule } from './modules/websocket/websocket.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { AgentModule } from './modules/agent/agent.module';
+import { FaqModule } from './modules/faq/faq.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AgentModule } from './modules/agent/agent.module';
     WebsocketModule,
     WebsiteModule,
     AgentModule,
+    FaqModule,
   ],
 })
 export class AppModule implements NestModule {
