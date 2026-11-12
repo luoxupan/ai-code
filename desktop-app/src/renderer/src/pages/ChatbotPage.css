@@ -152,7 +152,6 @@
 .message-content {
   max-width: 78%;
   min-width: 0;
-  padding: 0.12rem 0.15rem;
   border-radius: 0.16rem;
   line-height: 1.6;
   font-size: 0.13rem;
@@ -190,7 +189,7 @@
 }
 
 .message-status {
-  margin-top: 0.05rem;
+  padding: 0 0.15rem 0.1rem;
   color: rgba(6, 16, 20, 0.68);
   font-size: 0.09rem;
   text-align: right;

@@ -1,11 +1,9 @@
 .mail-card {
   width: 35vw;
   max-width: 6.9rem;
-  /* padding: 0.26rem 0.24rem 0.3rem; */
-  /* border: 0.01rem solid #e5e7eb; */
+  padding: 0.26rem 0.24rem 0.3rem;
   border-radius: 0.12rem;
   background: #fff;
-  /* box-shadow: 0 0.04rem 0.16rem rgba(15, 23, 42, 0.08); */
   color: #111827;
 }
 

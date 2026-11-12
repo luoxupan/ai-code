@@ -3,12 +3,6 @@
   min-width: 4rem;
   max-width: 100%;
   overflow: hidden;
-  /* border: 0.01rem solid #d8e3e0;
-  border-radius: 0.18rem;
-  background:
-    linear-gradient(145deg, rgba(0, 255, 170, 0.09), rgba(0, 212, 255, 0.05) 45%, #ffffff),
-    #ffffff;
-  box-shadow: 0 0.06rem 0.22rem rgba(15, 23, 42, 0.09); */
 }
 
 .message-card::after {
@@ -16,7 +10,6 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* background-image: linear-gradient(rgba(15, 23, 42, 0.025) 0.01rem, transparent 0.01rem); */
   background-size: 100% 0.18rem;
 }
 
@@ -61,7 +54,7 @@
 .message-card__body {
   position: relative;
   z-index: 1;
-  /* padding: 0.14rem 0.16rem; */
+  padding: 0.14rem 0.16rem;
   color: #1f2937;
 }
 
