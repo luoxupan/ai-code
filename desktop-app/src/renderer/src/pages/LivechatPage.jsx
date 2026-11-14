@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { getAllSessionInfo } from '../services/sessionService.ts'
 import './LivechatPage.css'
 
@@ -6,6 +6,18 @@ function LivechatPage() {
   const [message, setMessage] = useState('')
   const [sessionId, setSessionId] = useState('')
   const [sessions, setSessions] = useState([])
+  const textareaRef = useRef(null)
+
+  // 输入框高度随内容自适应：先复位再按 scrollHeight 撑开，超过 40vh 时内部滚动
+  useLayoutEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    const maxHeight = Math.round(window.innerHeight * 0.4)
+    const contentHeight = el.scrollHeight
+    el.style.height = `${Math.min(contentHeight, maxHeight)}px`
+    el.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden'
+  }, [message])
 
   useEffect(() => {
     getAllSessionInfo()
@@ -49,8 +61,9 @@ function LivechatPage() {
           ))}
         </select>
         <textarea
+          ref={textareaRef}
           className="livechat-input"
-          rows={4}
+          rows={1}
           value={message}
           placeholder="请输入消息"
           onChange={(event) => setMessage(event.target.value)}
