@@ -17,7 +17,11 @@ import { FaqModule } from './modules/faq/faq.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      // .local 文件里的变量优先生效，且不被 git 追踪，用于存放敏感信息
+      envFilePath: [
+        `.env.${process.env.NODE_ENV || 'development'}.local`,
+        `.env.${process.env.NODE_ENV || 'development'}`,
+      ],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
