@@ -21,6 +21,7 @@ class ChatSocketService {
   private ackListeners = new Map<string, (ack: any) => void>();
   private connectionPromise: Promise<void> | null = null;
   private connectionReject: ((error: Error) => void) | null = null;
+  private connecting = false;
   private sessionId = '';
   private userId = '';
   private shouldConnectWithTemporaryAuth = false;
@@ -67,19 +68,17 @@ class ChatSocketService {
       return Promise.resolve();
     }
 
-    if (this.connectionPromise) {
+    // 正在建立连接时直接复用同一个 Promise，避免 StrictMode 等场景下的重复握手
+    if (this.connecting && this.connectionPromise) {
       return this.connectionPromise;
     }
 
-    // this.setStatus('connecting');
-    // this.socket = io(SOCKET_URL, {
-    //   transports: ['websocket'],
-    //   auth: this.createAuth(),
-    // });
+    this.connecting = true;
 
     this.connectionPromise = new Promise<void>((resolve, reject) => {
       this.socket = io(SOCKET_URL, {
         transports: ['websocket'],
+        reconnection: false,
         auth: this.createAuth(),
       });
       this.setStatus('connecting');
@@ -90,6 +89,7 @@ class ChatSocketService {
         this.setupMessageListener();
         this.shouldConnectWithTemporaryAuth = false;
         this.setStatus('connected');
+        this.connecting = false;
         this.connectionPromise = null;
         this.connectionReject = null;
         resolve();
@@ -97,7 +97,7 @@ class ChatSocketService {
 
       this.socket.on('disconnect', (reason: string) => {
         console.warn('[chat-socket] disconnected:', reason);
-        this.cleanup();
+        this.connecting = false;
         this.connectionPromise = null;
         this.connectionReject = null;
         this.setStatus('disconnected');
@@ -106,6 +106,7 @@ class ChatSocketService {
       this.socket.on('connect_error', (error: Error) => {
         console.error('[chat-socket] connect error:', error);
         this.cleanup();
+        this.connecting = false;
         this.connectionPromise = null;
         this.connectionReject = null;
         this.setStatus('disconnected');
@@ -133,8 +134,21 @@ class ChatSocketService {
 
   private cleanup(): void {
     this.socket?.off();
+    this.socket?.removeAllListeners();
     this.socket = null;
     this.ackListeners.clear();
+  }
+
+  public disconnect(): void {
+    this.socket?.off();
+    this.socket?.removeAllListeners();
+    this.socket?.disconnect();
+    this.socket = null;
+    this.connecting = false;
+    this.connectionPromise = null;
+    this.connectionReject = null;
+    this.ackListeners.clear();
+    this.setStatus('disconnected');
   }
 
   private sendAck(mid: string): void {
@@ -184,6 +198,7 @@ export function registerChatSocketIpc(): void {
 
   ipcMain.handle('chat-socket:get-status', () => chatSocketService.getStatus());
   ipcMain.handle('chat-socket:connect', () => chatSocketService.connect());
+  ipcMain.handle('chat-socket:disconnect', () => chatSocketService.disconnect());
   ipcMain.handle('chat-socket:send-message', (_event, message: any) => {
     return chatSocketService.sendMessage(message);
   });

@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('chatSocket', {
   setSessionInfo: (session: ChatSocketSession) => ipcRenderer.invoke('chat-socket:set-session-info', session),
   getStatus: () => ipcRenderer.invoke('chat-socket:get-status'),
   connect: () => ipcRenderer.invoke('chat-socket:connect'),
+  disconnect: () => ipcRenderer.invoke('chat-socket:disconnect'),
   sendMessage: (message: ChatSocketMessage) => ipcRenderer.invoke('chat-socket:send-message', message),
   onMessage: (callback: (message: ChatSocketMessage) => void) => subscribe('chat-socket:message', callback),
   onStatusChange: (callback: (status: ChatSocketStatus) => void) => subscribe('chat-socket:status', callback)

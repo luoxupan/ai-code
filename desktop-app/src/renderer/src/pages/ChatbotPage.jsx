@@ -73,6 +73,8 @@ const ChatbotPage = () => {
     return () => {
       unsubscribeStatus();
       unsubscribeMessage();
+      // 卸载时断开连接，避免 StrictMode 双 mount 产生重复连接
+      socketService.disconnect();
     };
   }, [setMessages, setReplyPending, setStatus, userId]);
 

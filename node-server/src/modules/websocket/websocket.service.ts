@@ -50,6 +50,13 @@ export class WebsocketService implements OnModuleInit {
     userId: string,
     wsClientId: string,
   ) {
+    // 同一 session 重连时，先清掉旧连接，避免 clients 里残留僵尸 socket
+    const existing = this.sessionConnections.get(sessionId);
+    if (existing && existing.wsClientId !== wsClientId) {
+      this.clients.delete(existing.wsClientId);
+      this.sessionIdsByClientId.delete(existing.wsClientId);
+    }
+
     this.sessionConnections.set(sessionId, { user_id: userId, wsClientId });
     this.sessionIdsByClientId.set(wsClientId, sessionId);
   }

@@ -47,6 +47,7 @@ class SocketService {
     this.connectionPromise = new Promise((resolve, reject) => {
       this.socket = io(SOCKET_URL, {
         transports: ['websocket'],
+        reconnection: false,
         auth: this.createAuth(),
       });
       this.setStatus('connecting');
@@ -63,7 +64,6 @@ class SocketService {
       this.socket.on('disconnect', (reason: string) => {
         console.log('Socket.IO disconnected:', reason);
         this.setStatus('disconnected');
-        this.cleanup();
       });
 
       this.socket.on('connect_error', (err: Error) => {
@@ -113,13 +113,11 @@ class SocketService {
   }
 
   public disconnect() {
-    this.socket?.disconnect();
-    this.cleanup();
-  }
-
-  private cleanup() {
     this.socket?.off();
+    this.socket?.removeAllListeners();
+    this.socket?.disconnect();
     this.socket = null;
+    this.connectionPromise = null;
     this.ackListeners.clear();
   }
   

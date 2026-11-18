@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { app, BrowserWindow } from 'electron'
-import './chatSocket'
+import { chatSocketService } from './chatSocket'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -42,4 +42,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  chatSocketService.disconnect()
 })

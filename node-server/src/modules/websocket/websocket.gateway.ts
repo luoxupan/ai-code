@@ -56,16 +56,30 @@ export class WebsocketGateway
 
   async handleConnection(client: Socket) {
     const auth = client.handshake.auth as WebsocketAuth;
-    this.logger.log(`Client connected: ${client.id}`, auth.session_id);
+    this.logger.log(
+      `Client connected: ${client.id} addr=${client.handshake.address} ` +
+        `transport=${client.conn.transport.name} ` +
+        `ua=${String(client.handshake.headers['user-agent']).slice(0, 80)} ` +
+        `auth=${JSON.stringify(auth)}`,
+    );
+
+    // 未带合法鉴权信息的连接不纳入会话管理，避免脏数据与 session 覆盖
+    if (!auth.session_id || !auth.user_id) {
+      this.logger.warn(
+        `Rejecting unauthenticated connection: ${client.id}`,
+      );
+      client.disconnect(true);
+      return;
+    }
+
     this.websocketService.addClient(client);
-    console.log('handleConnection:', auth.session_id, client.id);
     this.websocketService.registerSessionConnection(
       auth.session_id,
       auth.user_id,
       client.id,
     );
 
-    if (auth.iconnect !== true || !auth.session_id || !auth.user_id) {
+    if (auth.iconnect !== true) {
       return;
     }
 
@@ -84,7 +98,7 @@ export class WebsocketGateway
   }
 
   async handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    this.logger.log(`Client disconnected: ${client.id}`);
     await this.websocketService.removeClient(client.id);
   }
 

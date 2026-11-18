@@ -11,6 +11,7 @@ type ChatSocketApi = {
   }) => Promise<void>;
   getStatus: () => Promise<Status>;
   connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
   sendMessage: (message: any) => Promise<any>;
   onMessage: (callback: (message: any) => void) => () => void;
   onStatusChange: (callback: (status: Status) => void) => () => void;
@@ -42,6 +43,7 @@ export const socketService = {
   }),
   getStatus: (): Promise<Status> => getChatSocket().getStatus(),
   connect: (): Promise<void> => getChatSocket().connect(),
+  disconnect: (): Promise<void> => getChatSocket().disconnect(),
   sendMessage: (message: any): Promise<any> => getChatSocket().sendMessage(message),
   onMessage: (callback: (message: any) => void): (() => void) => {
     return getChatSocket().onMessage(callback);
