@@ -8,7 +8,7 @@
 - 全局路由前缀在 `src/main.ts` 中硬编码为 `api/v1`，因此所有 HTTP 路由都是 `/api/v1/...`。
 - 数据层使用 TypeORM：开发/预发/生产为 MySQL，测试为 sqlite 内存库（`.env.test`）。
 - 实时通信使用 socket.io，事件名为 `Message`。
-- `src/agent/index.ts` 是独立的 LangChain + Ollama 实验脚本（对话 Agent + 工具调用），不参与 Nest 运行时装配，也已被 ESLint 忽略。
+- `src/agent/` 是独立的 Agent 实验目录，不参与 Nest 运行时装配：`shared.ts`（两个实现共用的 ChatModel / 系统提示 / 调用逻辑）、`langchain.ts`（LangChain `createAgent` 版）、`langgraph.ts`（LangGraph `StateGraph` 手写版），两个实现的 `invokeAgent` / `deleteAgentMemory` 签名一致，`index.ts` 只是统一出口（默认导出 LangChain 版）。
 - Git 仓库根在**上级目录** `/Users/luoxupan/ai-code`（同时含 `web-app`、`python` 等子项目），本目录只是其中一个子项目。
 
 ## 2. 常用命令
@@ -77,7 +77,10 @@ src/
   modules/faq/                    # FAQ RAG：实体/DTO + Qdrant/Embedding 封装，
                                   # search_faq 工具通过 configureFaqSearchHandler 注入
   scripts/seed-faq.ts             # npm run seed:faq 的入口
-  agent/index.ts                  # 独立脚本，非 Nest 代码
+  agent/index.ts                  # barrel：默认导出 LangChain 版 agent
+  agent/shared.ts                 # 两个实现共用：ChatModel / 系统提示 / 调用与取结果
+  agent/langchain.ts              # LangChain createAgent 实现（独立脚本）
+  agent/langgraph.ts              # LangGraph StateGraph 实现（独立脚本）
 sql/faq.sql                       # FAQ 表 DDL（开发/预发/生产手工执行）
 test/                             # e2e 用例与 jest-e2e.json
 ```
@@ -94,7 +97,7 @@ test/                             # e2e 用例与 jest-e2e.json
 - **WebSocket**：`WebsocketGateway` 事件名 `Message`，`pingInterval: 5000`、`pingTimeout: 10000`、`cors.origin: '*'`；`WebsocketService` 维护 `clientId -> Socket` 映射并已从 `WebsocketModule` 导出，需要主动推送时注入该 Service（`TestController` 是现成示例）。
 - **WebSocket 消息协议**：`{ type, subType, mid, payload: { content } }`；`type` 1=连接、2=断开、3=ack、5=聊天消息，`type=5` 时前端按 `subType` 渲染（1 猜你想问、2 faq、3 订单、4 邮件卡片）。完整说明见 `socket-test-client.js` 末尾注释。
 - **FAQ 卡片内容格式**：`subType=2` 的 `payload.content` 是 `{"question":"...","answer":"..."}` 的 JSON 字符串，由 `WebsocketService.sendFaqCardToClient` 生成，前端 `FaqCard` 直接解析。
-- **Agent 的系统提示**：`src/agent/index.ts` 的 `createAgent({ systemPrompt })` 会把提示包装成 `SystemMessage`，其 `content` 是 `[{ type: 'text', text }]` 内容块数组；GLM 的 OpenAI 兼容接口只接受字符串，`toApiMessage` 里已用 `contentToText` 拍平。新增消息类型或换模型时注意别再把数组原样透传，否则系统提示会变成 `[object Object]`。
+- **Agent 的系统提示**：`src/agent/langchain.ts` 的 `createAgent({ systemPrompt })` 会把提示包装成 `SystemMessage`，其 `content` 是 `[{ type: 'text', text }]` 内容块数组；GLM 的 OpenAI 兼容接口只接受字符串，`toApiMessage` 里已用 `contentToText` 拍平。新增消息类型或换模型时注意别再把数组原样透传，否则系统提示会变成 `[object Object]`。LangGraph 版（`src/agent/langgraph.ts`）直接 `new SystemMessage(SYSTEM_PROMPT)`，不存在这个问题。
 
 ## 5. 数据库
 
@@ -131,14 +134,14 @@ test/                             # e2e 用例与 jest-e2e.json
 
 - Prettier：`singleQuote: true`、`trailingComma: all`；提交前跑 `npm run format` 与 `npm run lint`。
 - ESLint 用 flat config + `typescript-eslint` 的 `recommendedTypeChecked`；`@typescript-eslint/no-explicit-any` 已关闭，`no-floating-promises` 与 `no-unsafe-argument` 为 warn，`prettier/prettier` 为 error。
-- `eslint.config.mjs` 与 `src/agent/index.ts` 在 ESLint 中被忽略，改动这两处不会有 lint 保护。
+- `eslint.config.mjs` 在 ESLint 中被忽略，改动这里不会有 lint 保护（`src/agent/` 已不再被忽略）。
 - TypeScript：`module`/`moduleResolution` 为 `nodenext`，`strictNullChecks: true`，但 `noImplicitAny: false`、`strictBindCallApply: false`；装饰器与 `emitDecoratorMetadata` 已开启（改 tsconfig 时别关掉）。
 - 业务日志目前多为 `console.log`/`console.error`；在 Nest 代码里新增日志优先用内置 `Logger`。
 
 ## 8. 依赖与脚本注意事项
 
 - 新增依赖用 `npm install <pkg>`，保持 `package-lock.json` 同步。
-- `src/agent/index.ts` 从 `zod` 导入，但 `zod` 并未在 `package.json` 中直接声明（现由 langchain 间接装出 4.x）。若要正式使用该脚本，请显式声明依赖，并注意它需要本地 Ollama（默认 `qwen3:4b`）。
+- `src/agent/tools/index.ts` 从 `zod` 导入，但 `zod` 并未在 `package.json` 中直接声明（现由 langchain 间接装出 4.x）。若要正式使用该脚本，请显式声明依赖，并注意它需要本地 Ollama（默认 `qwen3:4b`）。
 
 ## 9. 提交与协作
 
