@@ -65,9 +65,7 @@ export class WebsocketGateway
 
     // 未带合法鉴权信息的连接不纳入会话管理，避免脏数据与 session 覆盖
     if (!auth.session_id || !auth.user_id) {
-      this.logger.warn(
-        `Rejecting unauthenticated connection: ${client.id}`,
-      );
+      this.logger.warn(`Rejecting unauthenticated connection: ${client.id}`);
       client.disconnect(true);
       return;
     }

@@ -11,5 +11,5 @@
  */
 
 export { DeepSeekChatModel, SYSTEM_PROMPT } from './shared';
-// export { deleteAgentMemory, invokeAgent } from './langchain';
-export { deleteAgentMemory, invokeAgent } from './langgraph';
+export { deleteAgentMemory, invokeAgent } from './langchain';
+// export { deleteAgentMemory, invokeAgent } from './langgraph';

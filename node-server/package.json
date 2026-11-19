@@ -29,7 +29,10 @@
     "seed:faq": "ts-node -r tsconfig-paths/register src/scripts/seed-faq.ts"
   },
   "dependencies": {
+    "@langchain/langgraph-checkpoint-redis": "^1.1.2",
     "@langchain/ollama": "^1.2.7",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@modelcontextprotocol/server-github": "^2025.4.8",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",

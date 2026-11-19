@@ -36,6 +36,16 @@ $ npm install
 mysql.server start
 ```
 
+redis启动命令
+```bash
+redis-server
+```
+
+Ollama bge-m3 启动方式‌
+```bash
+ollama list # 无需单独启动模型，只需确保 ‌Ollama 服务‌ 正在运行
+```
+
 ## Compile and run the project
 
 ```bash

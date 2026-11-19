@@ -44,16 +44,22 @@
  *   langgraph.ts 则把这张图逐节点写出来，便于看清每一步。
  */
 
-import { MemorySaver } from '@langchain/langgraph-checkpoint';
-import { createAgent, createMiddleware, ToolMessage } from 'langchain';
+import { RedisSaver } from '@langchain/langgraph-checkpoint-redis';
+import { createAgent, createMiddleware, ToolMessage, tool } from 'langchain';
+import { loadGithubMcpTools } from './mcp/github';
+import { REDIS_CONF } from './redis';
 import { tools } from './tools';
 import { DeepSeekChatModel, SYSTEM_PROMPT, invokeAgentWith } from './shared';
 
 /**
  * 组装 agent：把模型、工具、中间件、checkpointer、系统提示交给 createAgent，
  * 返回的是编译好、可直接 invoke 的图（内部即 ② 那张 ReAct 图）。
+ *
+ * GitHub MCP 工具需要异步拉起 stdio 子进程并拉取工具列表，RedisSaver 也需要
+ * 异步建立连接并建索引，因此这里改为异步组装；MCP 连接失败时
+ * loadGithubMcpTools 会降级返回空数组，本地工具照常生效。
  */
-const createConfiguredAgent = () => {
+const createConfiguredAgent = async (allTools: ReturnType<typeof tool>[]) => {
   // 中间件：包住每一次工具调用，把异常转成 ToolMessage，避免工具报错直接掀翻整轮对话
   const handleToolErrors = createMiddleware({
     name: 'HandleToolErrors',
@@ -70,31 +76,46 @@ const createConfiguredAgent = () => {
     },
   });
 
-  const checkpointer = new MemorySaver();
+  // 用 Redis 做 checkpointer：多实例（PM2 集群）共享同一份会话记忆，
+  // 避免 MemorySaver 只在单进程内存里导致跨进程「失忆」。
+  const checkpointer = await RedisSaver.fromUrl(REDIS_CONF.url, REDIS_CONF.ttl);
   return createAgent({
     model: new DeepSeekChatModel(), // 未 bindTools，由 createAgent 内部按 tools 绑定
-    tools: tools,
+    tools: allTools,
     middleware: [handleToolErrors],
     checkpointer,
     systemPrompt: SYSTEM_PROMPT,
   });
 };
 
-let agent: ReturnType<typeof createConfiguredAgent> | undefined;
+// createConfiguredAgent 是 async，返回的是 Promise<ReactAgent>，这里用 Awaited 取出图本身
+type ConfiguredAgent = Awaited<ReturnType<typeof createConfiguredAgent>>;
 
-/** 懒加载 + 进程内单例：图只建一次，MemorySaver 也只有一份，多轮记忆才能共享。 */
-const getAgent = () => {
-  agent ??= createConfiguredAgent();
-  return agent;
+let agentPromise: Promise<ConfiguredAgent> | undefined;
+
+/**
+ * 懒加载 + 进程内单例：图只建一次，RedisSaver 连接也只建一次。
+ * 多实例部署时每个 worker 各自建一份图（这是正常的），但 checkpointer 都指向
+ * 同一个 Redis，因此会话记忆跨进程共享。
+ * 本地工具 + GitHub MCP 工具合并后一起交给 createAgent。
+ */
+const getAgent = (): Promise<ConfiguredAgent> => {
+  agentPromise ??= loadGithubMcpTools().then((mcpTools) =>
+    createConfiguredAgent([...tools, ...mcpTools]),
+  );
+  return agentPromise;
 };
 
 /**
  * 清掉某个会话的记忆：直接操作 checkpointer 里该 thread 的存档。
  * WebSocket 断开连接时由 websocket.service 调用。
+ * RedisSaver 的 deleteThread 会删掉 Redis 里该 thread 的全部 checkpoint，
+ * 多实例下同样生效（所有 worker 共享同一个 Redis）。
  */
 export const deleteAgentMemory = async (threadId: string): Promise<void> => {
-  const checkpointer = getAgent().checkpointer;
-  if (checkpointer instanceof MemorySaver) {
+  const checkpointer = (await getAgent()).checkpointer;
+  // checkpointer 类型上可能是 boolean/undefined（未配置时），这里确认是可用实例再删
+  if (checkpointer && typeof checkpointer === 'object') {
     await checkpointer.deleteThread(threadId);
   }
 };
@@ -105,12 +126,12 @@ export const deleteAgentMemory = async (threadId: string): Promise<void> => {
  * 真正的调用、上下文注入、结果提取都在 shared.ts 的 invokeAgentWith 里，
  * 这里只负责把「本文件这套 LangChain 实现」传进去。
  */
-export const invokeAgent = (
+export const invokeAgent = async (
   message: string,
   threadId?: string,
   wsClientId?: string,
 ): Promise<string> =>
-  invokeAgentWith(getAgent(), message, threadId, wsClientId);
+  invokeAgentWith(await getAgent(), message, threadId, wsClientId);
 
 // Keep the standalone script behavior available for manual experiments.
 // 注意：图里配了 checkpointer，必须带 thread_id，否则 MemorySaver 会抛
